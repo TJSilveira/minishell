@@ -58,11 +58,23 @@ int	run_command(char *line)
 		return (EXIT_FAILURE);
 	}
 	free(line);
-
+	if (lexer->first_token == NULL && lexer->count_token == 0)
+	{
+		free(lexer);
+		return(EXIT_SUCCESS);
+	}
+	
+	// for (int i = 0; i < lexer->count_token; i++)
+	// {
+	// 	printf("'%s' ", lexer->first_token->data);
+	// 	lexer->first_token = lexer->first_token->next;
+	// }
+	// exit(0);
+		
 	par = init_paser(lexer);
 	
 	root_tree = parser_function(par, 0);
-	// print_ast_sexpr(root_tree);
+	usleep(1000);
 	to_free = to_free_struct();
 	to_free->par = par;
 	to_free->root_tree = root_tree;
@@ -103,7 +115,7 @@ void	terminal()
 			if (pl->line[ft_strlen(pl->line) - 1] == '\n')
 				pl->line[ft_strlen(pl->line) - 1] = 0;
 		}
-		if (ft_strlen(pl->line) > 0 && check_only_terminal(pl->line))
+		if (check_only_terminal(pl->line))
 		{
 			free(pl->line);
 			continue;

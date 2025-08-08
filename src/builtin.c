@@ -80,7 +80,7 @@ int	echo_builtin(t_ast *node)
 	option = 0;
 	if (node == NULL)
 	{
-		printf("\n");
+		ft_putstr_fd("\n", STDOUT_FILENO);
 		return (EXIT_SUCCESS);
 	}	
 	if (ft_strncmp(node->data, "-n", 2) == 0 && ft_strlen(node->data) == 2)
@@ -98,14 +98,17 @@ int	echo_builtin(t_ast *node)
 	while (initial_node)
 	{
 		if (count > 1)
-			printf("%s ", initial_node->data);
+		{
+			ft_putstr_fd(initial_node->data, STDOUT_FILENO);
+			ft_putstr_fd(" ", STDOUT_FILENO);
+		}
 		else
-			printf("%s", initial_node->data);
+			ft_putstr_fd(initial_node->data, STDOUT_FILENO);
 		initial_node = initial_node->left;
 		count--;
 	}
 	if (option == 0)
-		printf("\n");
+		ft_putstr_fd("\n", STDOUT_FILENO);
 	return (EXIT_SUCCESS);
 }
 
@@ -213,7 +216,7 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 		ft_putstr_fd(" numeric argument required\n", STDERR_FILENO);
 		free_global_struct();
 		free_struct_to_free();
-		exit(EXIT_FAILURE);
+		exit(2);
 	}
 	while (node)
 	{

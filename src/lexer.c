@@ -156,6 +156,54 @@ int	check_only_terminal(char *input)
 
 /* Start of lexer functions */
 
+void	remove_single_token(t_lexer *lexer, t_token *to_remove)
+{
+	t_token	*temp;
+
+	temp = lexer->first_token;
+	if (!lexer)
+		return;	
+	if (lexer->first_token == to_remove)
+	{
+		lexer->first_token = lexer->first_token->next;
+		free(temp->data);
+		free(temp);
+	}
+	else
+	{
+		while (temp->next != to_remove)
+			temp = temp->next;
+		temp->next = to_remove->next;
+		free(to_remove->data);
+		free(to_remove);
+	}
+	lexer->count_token--;
+}
+
+// TODO: Ensure that the function does not skip tokens when some is removed
+void	remove_empty_tokens(t_lexer *lexer)
+{
+	t_token	*curr;
+	t_token	*prev;
+
+	curr = lexer->first_token;
+	prev = NULL;
+	while (curr)
+	{
+		if (curr->data[0] == 0)
+		{
+			remove_single_token(lexer, curr);
+			if (prev == NULL)
+				curr = lexer->first_token;
+			else
+				curr = prev->next;
+			continue;
+		}
+		prev = curr;
+		curr = curr->next;
+	}
+}
+
 int	lexer_function(char *input, t_lexer *lexer)
 {
 	t_token_aux	aux;
@@ -174,6 +222,7 @@ int	lexer_function(char *input, t_lexer *lexer)
 	process_char(input, &aux, lexer);
 	clean_last_tokens(&aux, lexer);
 	token_expansion(&aux, lexer);
+	remove_empty_tokens(lexer);
 	if (check_matching_parenthesis(lexer) == EXIT_FAILURE)
 		return (EXIT_FAILURE);
 	return (EXIT_SUCCESS);

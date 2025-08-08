@@ -88,7 +88,7 @@ int	heredoc(char *limit, t_px *px)
 	return (-1);
 }
 
-void	redirections_files_setup(int fd, int type, int num_output_fd)
+void	redirections_files_setup(int fd, int type)
 {
 	if (fd == -1)
 		return ;
@@ -100,11 +100,8 @@ void	redirections_files_setup(int fd, int type, int num_output_fd)
 	}
 	else
 	{
-		if (num_output_fd == 0)
-		{
-			if (dup2(fd, STDOUT_FILENO) == -1)
-				error_handler("Duplicating write-end pipe to STDOUT", NULL, 1, NULL);
-		}
+		if (dup2(fd, STDOUT_FILENO) == -1)
+			error_handler("Duplicating write-end pipe to STDOUT", NULL, 1, NULL);
 		close(fd);
 	}
 }
@@ -112,9 +109,9 @@ void	redirections_files_setup(int fd, int type, int num_output_fd)
 int	redirections_setup(t_ast *root, t_px *px)
 {
 	int	fd;
-	int	num_output_fd;
+	// int	num_output_fd;
 
-	num_output_fd = 0;
+	// num_output_fd = 0;
 	while (root)
 	{
 		if (is_redirect_token(root->type))
@@ -128,10 +125,10 @@ int	redirections_setup(t_ast *root, t_px *px)
 				ft_putstr_fd(": No such file or directory\n", STDERR_FILENO);
 				return (EXIT_FAILURE);
 			}
-			redirections_files_setup(fd, root->type, num_output_fd);
+			redirections_files_setup(fd, root->type);
 		}
-		if (root->type == CHAR_OUTRED || root->type == CHAR_APPEND)
-			num_output_fd++;
+		// if (root->type == CHAR_OUTRED || root->type == CHAR_APPEND)
+		// 	num_output_fd++;
 		root = root->right;
 	}
 	return (EXIT_SUCCESS);
@@ -190,12 +187,6 @@ int	executor_aux(t_px *px, t_ast *root)
 	else if (root->type == CHAR_PIPE)
 	{
 		return (executor_pipe(px, root));
-	}
-	else if (root->type == CHAR_AMPERSAND || root->type == CHAR_DOLLAR
-			|| root->type == CHAR_QM) // To check if we can remove
-	{
-		executor_aux(px, root->left);
-		executor_aux(px, root->right);
 	}
 	else if (root->type == CHAR_AND)
 	{
@@ -403,7 +394,7 @@ int executor_function(t_ast *root_tree)
 	int		exit_code;
 	
 	if (root_tree == NULL)
-		return (EXIT_FAILURE);
+		return (EXIT_FAILURE);	
 	px = initialize_px(root_tree);
 	if (px->num_commands == 0)
 	{
