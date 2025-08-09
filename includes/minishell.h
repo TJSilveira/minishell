@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <termios.h>
+#include <errno.h>
 #include "../libft/libft.h"
 #define DEF 0
 #define LEFT 0

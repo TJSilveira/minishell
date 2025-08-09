@@ -117,18 +117,24 @@ int	redirections_setup(t_ast *root, t_px *px)
 		if (is_redirect_token(root->type))
 		{
 			fd = open_fd(root->right->data, root->type, px);
-			if (fd == -1)
+			if (errno == EACCES)
 			{
 				restore_fd(px);
 				ft_putstr_fd("minishell: ", STDERR_FILENO);
 				ft_putstr_fd(root->right->data, STDERR_FILENO);
-				ft_putstr_fd(": No such file or directory\n", STDERR_FILENO);
+				ft_putstr_fd(strerror(errno), STDERR_FILENO);
+				return (EXIT_FAILURE);
+			}
+			else if (fd == -1)
+			{
+				restore_fd(px);
+				ft_putstr_fd("minishell: ", STDERR_FILENO);
+				ft_putstr_fd(root->right->data, STDERR_FILENO);
+				ft_putstr_fd(strerror(errno), STDERR_FILENO);
 				return (EXIT_FAILURE);
 			}
 			redirections_files_setup(fd, root->type);
 		}
-		// if (root->type == CHAR_OUTRED || root->type == CHAR_APPEND)
-		// 	num_output_fd++;
 		root = root->right;
 	}
 	return (EXIT_SUCCESS);
@@ -359,32 +365,42 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 		final_path = ft_strjoin_3(paths[j], '/', commands[0]);
 		if (access(final_path, F_OK) == 0)
 			execve_checker(final_path, commands, paths, px);
+		printf("Errno in the while loop: [%i]\n", errno);
 		free (final_path);
 		j++;
 	}
 	if (access(commands[0], F_OK) == 0)
+	{
 		execve_checker(NULL, commands, paths, px);
+		printf("Errno in the if: [%i]\n", errno);
+	}
 	exec_command_free_aux(paths, commands, px);
-	error_handler("command not found", NULL, 127, NULL);
+	error_handler(strerror(errno), NULL, 127, NULL);
 }
 
 void	execve_checker(char *f_path, char **comms, char **paths, t_px *px)
 {
-	t_global *global;
+	t_global	*global;
+	char		*file;
 
 	global = global_struct();
-	if (execve(f_path, comms, global->ev) == -1 && f_path != NULL)
+	printf("This is the comms '%s'\n", comms[0]);
+	if (f_path != NULL && execve(f_path, comms, global->ev) == -1)
 	{
 		free(f_path);
+		file = ft_strdup(comms[0]);
 		free_arrays(comms);
 		free_arrays(paths);
-		error_handler("execve call:", NULL, 1, px);
+		error_handler(NULL, file, -1, px);
 	}
-	else if (execve(comms[0], comms, global->ev) == -1 && f_path == NULL)
+	else if (f_path == NULL && execve(comms[0], comms, global->ev) == -1)
 	{
+		printf("This is the errno [%i]\n", errno);
+		file = ft_strdup(comms[0]);
 		free_arrays(comms);
 		free_arrays(paths);
-		error_handler("execve call:", NULL, 1, px);
+		error_handler(NULL, file, -1, px);
+
 	}
 }
 
@@ -417,25 +433,35 @@ int executor_function(t_ast *root_tree)
 
 void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 {
-	char	*err_msg;
-
-	if (file_name == NULL && px == NULL)
-	{
-		perror(msg);
-		exit(error_code);
-	}
-	else if (file_name == NULL && px != NULL)
-	{
-		perror(msg);
+	if (px)
 		free_px(px);
-		exit(error_code);
-	}
-	else
+	ft_putstr_fd("minishell: ", STDERR_FILENO);	
+	if (file_name)
 	{
-		err_msg = ft_strjoin("./minishell: ", file_name);
-		perror(err_msg);
-		free(err_msg);
+		ft_putstr_fd(file_name, STDERR_FILENO);
+		free(file_name);
+		ft_putstr_fd(": ", STDERR_FILENO);		
+	}
+	if (msg)
+	{
+		ft_putstr_fd(msg, STDERR_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
+	}
+	if (error_code != -1)
 		exit(error_code);
+	if (errno == EFAULT)
+	{
+		// ft_putstr_fd("Is a directory\n", STDERR_FILENO);		
+		ft_putstr_fd(strerror(errno), STDERR_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
+		exit(126);
+	}
+	else if (errno == EACCES)
+	{
+		ft_putstr_fd(strerror(errno), STDERR_FILENO);
+		ft_putstr_fd("\n", STDERR_FILENO);
+		printf("In here\n");
+		exit(126);
 	}
 }
 

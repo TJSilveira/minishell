@@ -67,7 +67,8 @@ int	pwd_builtin(void)
 
 	size = 1024;
 	getcwd(buffer, size);
-	printf("%s\n", buffer);
+	ft_putstr_fd(buffer, STDOUT_FILENO);
+	ft_putstr_fd("\n", STDOUT_FILENO);
 	return (EXIT_SUCCESS);
 }
 
