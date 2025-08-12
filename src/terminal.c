@@ -74,7 +74,6 @@ int	run_command(char *line)
 	par = init_paser(lexer);
 	
 	root_tree = parser_function(par, 0);
-	usleep(1000);
 	to_free = to_free_struct();
 	to_free->par = par;
 	to_free->root_tree = root_tree;
@@ -109,9 +108,7 @@ void	terminal()
 			pl->line = get_next_line(STDIN_FILENO);
 			pl->input_type = NONINTERACTIVE_MODE;
 			if (pl->line == NULL)
-			{
 				exit_builtin(NULL);
-			}
 			if (pl->line[ft_strlen(pl->line) - 1] == '\n')
 				pl->line[ft_strlen(pl->line) - 1] = 0;
 		}

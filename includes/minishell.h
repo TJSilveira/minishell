@@ -173,7 +173,7 @@ void	free_lexer(t_lexer *lexer);
 
 /* executor.c */
 int	open_fd(char *path, int option, t_px *px);
-int	write_line(char *limit, int fd, int fd_stdout);
+int	write_line(char *limit, int fd, t_px *px);
 int	heredoc(char *limiter, t_px *px);
 int	count_number_commands(t_ast *root_tree);
 t_px	*initialize_px(t_ast *root_tree);

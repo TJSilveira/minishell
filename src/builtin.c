@@ -214,7 +214,7 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 	{
 		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
 		ft_putstr_fd(node->data, STDERR_FILENO);
-		ft_putstr_fd(" numeric argument required\n", STDERR_FILENO);
+		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
 		free_global_struct();
 		free_struct_to_free();
 		exit(2);
@@ -250,7 +250,6 @@ int	exit_builtin(t_ast *node)
 	if (node == NULL)
 	{
 		free_global_struct();
-		free_struct_to_free();
 		exit(EXIT_SUCCESS);
 	}
 	exit_code = 0;

@@ -1,22 +1,5 @@
 #include "../includes/minishell.h"
 
-/* TODOS
-SHOULD BE DONE ===> Add error handling functions
-===> Check the following bug
-
-((echo this && echo that) || echo cona) | grep this
-(| (|| (&& (echo this) (echo that)) (echo cona)) (grep this))
-[124] |
-[259] ||
-[258] &&
-[-1] echo
-[-1] echo
-that
-[-1] grep
-$>Duplicating read pipe to STDIN: Bad file descriptor
-
-*/
-
 /* Start of Redirections */
 
 int	open_fd(char *path, int option, t_px *px)
@@ -37,17 +20,19 @@ int	open_fd(char *path, int option, t_px *px)
 	return (fd);
 }
 
-int	write_line(char *limit, int fd, int fd_stdout)
+int	write_line(char *limit, int fd, t_px *px)
 {
 	char	*line;
 	char	*limitor;
 	size_t	size;
+	t_prompt_line	*pl;
 
 	limitor = ft_strjoin(limit, "\n");
 	size = ft_strlen(limitor);
+	pl = to_prompt_line_struct();
 	while (1)
 	{
-		write(fd_stdout, "> ", 2);
+		write(px->fd_stdout, "> ", 2);
 		line = get_next_line(0);
 		if (size == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0)
 		{
@@ -55,6 +40,10 @@ int	write_line(char *limit, int fd, int fd_stdout)
 			free(limitor);
 			close(fd);
 			get_next_line(-1);
+			free_px(px);
+			free_global_struct();
+			free_struct_to_free();
+			free(pl->prompt);
 			exit(EXIT_SUCCESS);
 		}
 		if (write(fd, line, ft_strlen(line)) == -1)
@@ -77,7 +66,7 @@ int	heredoc(char *limit, t_px *px)
 	if (pid == 0)
 	{
 		close(pipe_fd[READ]);
-		write_line(limit, pipe_fd[WRITE], px->fd_stdout);
+		write_line(limit, pipe_fd[WRITE], px);
 	}
 	else
 	{
@@ -122,7 +111,9 @@ int	redirections_setup(t_ast *root, t_px *px)
 				restore_fd(px);
 				ft_putstr_fd("minishell: ", STDERR_FILENO);
 				ft_putstr_fd(root->right->data, STDERR_FILENO);
+				ft_putstr_fd(": ", STDERR_FILENO);
 				ft_putstr_fd(strerror(errno), STDERR_FILENO);
+				ft_putstr_fd("\n", STDERR_FILENO);
 				return (EXIT_FAILURE);
 			}
 			else if (fd == -1)
@@ -130,9 +121,11 @@ int	redirections_setup(t_ast *root, t_px *px)
 				restore_fd(px);
 				ft_putstr_fd("minishell: ", STDERR_FILENO);
 				ft_putstr_fd(root->right->data, STDERR_FILENO);
+				ft_putstr_fd(": ", STDERR_FILENO);
 				ft_putstr_fd(strerror(errno), STDERR_FILENO);
+				ft_putstr_fd("\n", STDERR_FILENO);
 				return (EXIT_FAILURE);
-			}
+			}			
 			redirections_files_setup(fd, root->type);
 		}
 		root = root->right;
@@ -186,8 +179,9 @@ int	executor_aux(t_px *px, t_ast *root)
 	if (root == NULL)
 		return (EXIT_SUCCESS);
 	if (is_default_token(root->type))
-	{ 
+	{
 		exit_code = executor(px, root);
+		// free_px(px);
 		return (exit_code);
 	}
 	else if (root->type == CHAR_PIPE)
@@ -236,6 +230,9 @@ int	executor_pipe(t_px *px, t_ast *root)
 		dup2(pipe_fd[WRITE], STDOUT_FILENO);
 		close(pipe_fd[READ]);
 		exit_code = execute_subshell(px, root->left);
+		// free_px(px);
+		free_struct_to_free();
+		free_global_struct();
 		exit (exit_code);
 	}
 	ignore_signals();
@@ -246,6 +243,9 @@ int	executor_pipe(t_px *px, t_ast *root)
 		dup2(pipe_fd[READ], STDIN_FILENO);
 		close(pipe_fd[WRITE]);
 		exit_code = execute_subshell(px, root->right);
+		// free_px(px);
+		free_struct_to_free();
+		free_global_struct();
 		exit (exit_code);
 	}
 	close(pipe_fd[READ]);
@@ -271,12 +271,16 @@ int	execute_subshell(t_px *px, t_ast *root)
 {
 	t_px	*px_subshell;
 	int		exit_code;
+	t_prompt_line	*pl;
 
+	pl = to_prompt_line_struct();
 	px_subshell = initialize_px(root);
 	px_subshell->fd_stdin = px->fd_stdin;
 	px_subshell->fd_stdout = px->fd_stdout;
 	exit_code = executor_aux(px_subshell, root);
-	free(px_subshell);
+	free_px(px);
+	free_px(px_subshell);
+	free(pl->prompt);
 	return (exit_code);
 }
 
@@ -408,15 +412,19 @@ int executor_function(t_ast *root_tree)
 	px = initialize_px(root_tree);
 	if (px->num_commands == 0)
 	{
+		printf("In here\n");
 		exit_code = redirections_setup(px->root_tree, px);
 		restore_fd(px);
 		free_px(px);
+		free_global_struct();
+		free_struct_to_free();
 		return (exit_code);
 	}
 	else
 	{
 		exit_code = executor_aux(px, px->root_tree);
 		free_px(px);
+		free_struct_to_free();
 		return (exit_code);
 	}
 }
@@ -575,7 +583,15 @@ void	free_arrays(char **arrays)
 
 void	free_px(t_px *px)
 {
-	free(px);
+	if (px)
+	{
+		if (px->fd_stdin > 2)
+			close(px->fd_stdin);
+		if (px->fd_stdout > 2)
+			close(px->fd_stdout);
+		free(px);
+		px = NULL;
+    }
 }
 
 void	free_struct_to_free(void)
@@ -583,9 +599,21 @@ void	free_struct_to_free(void)
 	t_to_free	*to_free;
 
 	to_free = to_free_struct();
-	free_lexer(to_free->lexer);
-	free_ast(to_free->root_tree);
-	free_parser_struct(to_free->par);
+	if (to_free->lexer)
+	{
+		free_lexer(to_free->lexer);
+		to_free->lexer = NULL;
+	}
+	if (to_free->root_tree)
+	{
+		free_ast(to_free->root_tree);
+		to_free->root_tree = NULL;
+	}
+	if (to_free->par)
+	{
+		free_parser_struct(to_free->par);
+		to_free->par = NULL;
+	}
 }
 
 /* END of Executor AUX functions*/
