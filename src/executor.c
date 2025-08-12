@@ -365,17 +365,14 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 		final_path = ft_strjoin_3(paths[j], '/', commands[0]);
 		if (access(final_path, F_OK) == 0)
 			execve_checker(final_path, commands, paths, px);
-		printf("Errno in the while loop: [%i]\n", errno);
 		free (final_path);
 		j++;
 	}
-	if (access(commands[0], F_OK) == 0)
-	{
+	if (ft_strchr(commands[0], '/') && access(commands[0], F_OK) == 0)
 		execve_checker(NULL, commands, paths, px);
-		printf("Errno in the if: [%i]\n", errno);
-	}
+	char	*file_name = ft_strdup(cmd_node->data);
 	exec_command_free_aux(paths, commands, px);
-	error_handler(strerror(errno), NULL, 127, NULL);
+	error_handler(NULL, file_name, -1, NULL);
 }
 
 void	execve_checker(char *f_path, char **comms, char **paths, t_px *px)
@@ -384,7 +381,6 @@ void	execve_checker(char *f_path, char **comms, char **paths, t_px *px)
 	char		*file;
 
 	global = global_struct();
-	printf("This is the comms '%s'\n", comms[0]);
 	if (f_path != NULL && execve(f_path, comms, global->ev) == -1)
 	{
 		free(f_path);
@@ -395,12 +391,10 @@ void	execve_checker(char *f_path, char **comms, char **paths, t_px *px)
 	}
 	else if (f_path == NULL && execve(comms[0], comms, global->ev) == -1)
 	{
-		printf("This is the errno [%i]\n", errno);
 		file = ft_strdup(comms[0]);
 		free_arrays(comms);
 		free_arrays(paths);
 		error_handler(NULL, file, -1, px);
-
 	}
 }
 
@@ -433,13 +427,14 @@ int executor_function(t_ast *root_tree)
 
 void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 {
+	struct stat file_stat;
+
 	if (px)
 		free_px(px);
 	ft_putstr_fd("minishell: ", STDERR_FILENO);	
 	if (file_name)
 	{
 		ft_putstr_fd(file_name, STDERR_FILENO);
-		free(file_name);
 		ft_putstr_fd(": ", STDERR_FILENO);		
 	}
 	if (msg)
@@ -454,14 +449,33 @@ void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 		// ft_putstr_fd("Is a directory\n", STDERR_FILENO);		
 		ft_putstr_fd(strerror(errno), STDERR_FILENO);
 		ft_putstr_fd("\n", STDERR_FILENO);
+		if (file_name)
+			free(file_name);
 		exit(126);
 	}
 	else if (errno == EACCES)
 	{
-		ft_putstr_fd(strerror(errno), STDERR_FILENO);
-		ft_putstr_fd("\n", STDERR_FILENO);
-		printf("In here\n");
-		exit(126);
+		if (stat(file_name, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
+		{
+			ft_putstr_fd("Is a directory\n", STDERR_FILENO);
+			free(file_name);
+			exit(126);
+		}
+		else
+		{
+			ft_putstr_fd("Permission denied\n", STDERR_FILENO);
+			free(file_name);
+			exit(126);
+		}
+	}
+	else if (errno == ENOENT && file_name)
+	{
+		if (ft_strchr(file_name, '/'))
+			ft_putstr_fd("No such file or directory\n", STDERR_FILENO);
+		else
+			ft_putstr_fd("command not found\n", STDERR_FILENO);
+		free(file_name);
+		exit(127);
 	}
 }
 
