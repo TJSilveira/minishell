@@ -78,7 +78,6 @@ int	check_matching_quotes(char *input)
 	int		i;
 	int		counter;
 	char	quote_type;
-
 	
 	i = 0;
 	counter = 0;
@@ -162,7 +161,7 @@ void	remove_single_token(t_lexer *lexer, t_token *to_remove)
 
 	temp = lexer->first_token;
 	if (!lexer)
-		return;	
+		return ;
 	if (lexer->first_token == to_remove)
 	{
 		lexer->first_token = lexer->first_token->next;
@@ -197,7 +196,7 @@ void	remove_empty_tokens(t_lexer *lexer)
 				curr = lexer->first_token;
 			else
 				curr = prev->next;
-			continue;
+			continue ;
 		}
 		prev = curr;
 		curr = curr->next;
@@ -437,7 +436,7 @@ int	token_quote_removal(t_token *token, int *i, int *status, int quote_type)
 		return (1);
 	}
 	else if (token->data[*i] == '\\' && token->data[*i + 1] == quote_type
-				&& *status == quote_type)
+		&& *status == quote_type)
 	{
 		ft_rmvchr(token->data, &token->data[*i]);
 		(*i)++;
@@ -472,31 +471,31 @@ void	token_expansion_aux(t_token *token)
 	status = CHAR_DEF;
 	while (token->data[i])
 	{
-		if(token_quote_removal(token, &i, &status, CHAR_QUOTE))
-			continue;
-		if(token_quote_removal(token, &i, &status, CHAR_DQUOTE))
-			continue;
+		if (token_quote_removal(token, &i, &status, CHAR_QUOTE))
+			continue ;
+		if (token_quote_removal(token, &i, &status, CHAR_DQUOTE))
+			continue ;
 		j = 0;
-		if (token->data[i] == CHAR_DOLLAR 
-				&& token->data[i + 1] != 0
-				&& token->data[i + 1] == '?'
-				&& status != CHAR_QUOTE)
+		if (token->data[i] == CHAR_DOLLAR
+			&& token->data[i + 1] != 0
+			&& token->data[i + 1] == '?'
+			&& status != CHAR_QUOTE)
 		{
 			temp = ft_itoa(global->exit_code);
 			len = ft_strlen(temp);
 			insert_expansion(token, i, len + 1, temp);
 		}
-		else if (token->data[i] == CHAR_DOLLAR 
-				&& token->data[i + 1] != 0
-				&& token->data[i + 1] != ' '
-				&& token->data[i + 1] != CHAR_DQUOTE
-				&& status != CHAR_QUOTE)
+		else if (token->data[i] == CHAR_DOLLAR
+			&& token->data[i + 1] != 0
+			&& token->data[i + 1] != ' '
+			&& token->data[i + 1] != CHAR_DQUOTE
+			&& status != CHAR_QUOTE)
 		{
 			while (token->data[i + 1 + j] != 0
-					&& token->data[i + 1 + j] != ' '
-					&& token->data[i + 1 + j] != '\"'
-					&& token->data[i + 1 + j] != '\''
-					&& token->data[i + 1 + j] != '\\')
+				&& token->data[i + 1 + j] != ' '
+				&& token->data[i + 1 + j] != '\"'
+				&& token->data[i + 1 + j] != '\''
+				&& token->data[i + 1 + j] != '\\')
 			{
 				j++;
 			}
@@ -512,12 +511,12 @@ void	token_expansion_aux(t_token *token)
 void	token_expansion(t_token_aux *aux, t_lexer *lexer)
 {
 	if (lexer == NULL || lexer->first_token == NULL)
-		return;
+		return ;
 	aux->curr_token = lexer->first_token;
 	while (aux->curr_token)
 	{
 		if (aux->curr_token->type == CHAR_DQUOTE
-				|| aux->curr_token->type == CHAR_DEF)
+			|| aux->curr_token->type == CHAR_DEF)
 			token_expansion_aux(aux->curr_token);
 		aux->curr_token = aux->curr_token->next;
 	}

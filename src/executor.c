@@ -22,9 +22,9 @@ int	open_fd(char *path, int option, t_px *px)
 
 int	write_line(char *limit, int fd, t_px *px)
 {
-	char	*line;
-	char	*limitor;
-	size_t	size;
+	char			*line;
+	char			*limitor;
+	size_t			size;
 	t_prompt_line	*pl;
 
 	limitor = ft_strjoin(limit, "\n");
@@ -98,9 +98,7 @@ void	redirections_files_setup(int fd, int type)
 int	redirections_setup(t_ast *root, t_px *px)
 {
 	int	fd;
-	// int	num_output_fd;
 
-	// num_output_fd = 0;
 	while (root)
 	{
 		if (is_redirect_token(root->type))
@@ -125,7 +123,7 @@ int	redirections_setup(t_ast *root, t_px *px)
 				ft_putstr_fd(strerror(errno), STDERR_FILENO);
 				ft_putstr_fd("\n", STDERR_FILENO);
 				return (EXIT_FAILURE);
-			}			
+			}
 			redirections_files_setup(fd, root->type);
 		}
 		root = root->right;
@@ -181,7 +179,6 @@ int	executor_aux(t_px *px, t_ast *root)
 	if (is_default_token(root->type))
 	{
 		exit_code = executor(px, root);
-		// free_px(px);
 		return (exit_code);
 	}
 	else if (root->type == CHAR_PIPE)
@@ -192,10 +189,10 @@ int	executor_aux(t_px *px, t_ast *root)
 	{
 		exit_code = executor_aux(px, root->left);
 		if (exit_code != 0)
-			return (exit_code);	
+			return (exit_code);
 		return (executor_aux(px, root->right));
 	}
-	else if(root->type == CHAR_OR)
+	else if (root->type == CHAR_OR)
 	{
 		exit_code = executor_aux(px, root->left);
 		if (exit_code == 0)
@@ -221,7 +218,7 @@ int	executor_pipe(t_px *px, t_ast *root)
 	int	exit_code;
 
 	status = 0;
-	if(pipe(pipe_fd) != 0)
+	if (pipe(pipe_fd) != 0)
 		error_handler("Laying down the pipe(s)", NULL, 1, NULL);
 	pids[0] = fork();
 	if (pids[0] == 0)
@@ -230,7 +227,6 @@ int	executor_pipe(t_px *px, t_ast *root)
 		dup2(pipe_fd[WRITE], STDOUT_FILENO);
 		close(pipe_fd[READ]);
 		exit_code = execute_subshell(px, root->left);
-		// free_px(px);
 		free_struct_to_free();
 		free_global_struct();
 		exit (exit_code);
@@ -243,7 +239,6 @@ int	executor_pipe(t_px *px, t_ast *root)
 		dup2(pipe_fd[READ], STDIN_FILENO);
 		close(pipe_fd[WRITE]);
 		exit_code = execute_subshell(px, root->right);
-		// free_px(px);
 		free_struct_to_free();
 		free_global_struct();
 		exit (exit_code);
@@ -252,7 +247,7 @@ int	executor_pipe(t_px *px, t_ast *root)
 	close(pipe_fd[WRITE]);
 	waitpid(pids[0], &status, 0);
 	if (WIFSIGNALED(status))
-		write(1, "\n",1);
+		write(1, "\n", 1);
 	waitpid(pids[1], &status, 0);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
@@ -269,8 +264,8 @@ int	executor_pipe(t_px *px, t_ast *root)
 
 int	execute_subshell(t_px *px, t_ast *root)
 {
-	t_px	*px_subshell;
-	int		exit_code;
+	t_px			*px_subshell;
+	int				exit_code;
 	t_prompt_line	*pl;
 
 	pl = to_prompt_line_struct();
@@ -300,7 +295,7 @@ int	executor(t_px *px, t_ast *cmd_node)
 		child_signals();
 		status = redirections_setup(cmd_node, px);
 		if (status == EXIT_FAILURE)
-			exit (EXIT_FAILURE);		
+			exit (EXIT_FAILURE);
 		if (cmd_node->data == NULL || cmd_node->data[0] == 0)
 			error_handler("No command ''", NULL, 1, px);
 		if (is_default_token(cmd_node->type))
@@ -333,7 +328,6 @@ int	executor_builtin_func(t_px *px)
 	dup2(px->fd_stdout, STDOUT_FILENO);
 	close(px->fd_stdin);
 	close(px->fd_stdout);
-	// free_px(px);
 	return (exit_code);
 }
 
@@ -357,6 +351,7 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 	char	**paths;
 	char	*final_path;
 	char	**commands;
+	char	*file_name;
 
 	commands = commands_extractor(cmd_node);
 	builtin_functions(cmd_node, commands, px, TO_EXIT);
@@ -374,7 +369,7 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 	}
 	if (ft_strchr(commands[0], '/') && access(commands[0], F_OK) == 0)
 		execve_checker(NULL, commands, paths, px);
-	char	*file_name = ft_strdup(cmd_node->data);
+	file_name = ft_strdup(cmd_node->data);
 	exec_command_free_aux(paths, commands, px);
 	error_handler(NULL, file_name, -1, NULL);
 }
@@ -402,13 +397,13 @@ void	execve_checker(char *f_path, char **comms, char **paths, t_px *px)
 	}
 }
 
-int executor_function(t_ast *root_tree)
+int	executor_function(t_ast *root_tree)
 {
 	t_px	*px;
 	int		exit_code;
-	
+
 	if (root_tree == NULL)
-		return (EXIT_FAILURE);	
+		return (EXIT_FAILURE);
 	px = initialize_px(root_tree);
 	if (px->num_commands == 0)
 	{
@@ -435,15 +430,15 @@ int executor_function(t_ast *root_tree)
 
 void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 {
-	struct stat file_stat;
+	struct stat	file_stat;
 
 	if (px)
 		free_px(px);
-	ft_putstr_fd("minishell: ", STDERR_FILENO);	
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
 	if (file_name)
 	{
 		ft_putstr_fd(file_name, STDERR_FILENO);
-		ft_putstr_fd(": ", STDERR_FILENO);		
+		ft_putstr_fd(": ", STDERR_FILENO);
 	}
 	if (msg)
 	{
@@ -454,7 +449,6 @@ void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 		exit(error_code);
 	if (errno == EFAULT)
 	{
-		// ft_putstr_fd("Is a directory\n", STDERR_FILENO);		
 		ft_putstr_fd(strerror(errno), STDERR_FILENO);
 		ft_putstr_fd("\n", STDERR_FILENO);
 		if (file_name)
@@ -500,8 +494,8 @@ char	**commands_extractor(t_ast *cmd_node)
 	char	**commands;
 
 	if (cmd_node == NULL || cmd_node->data == NULL
-			|| cmd_node->type != CHAR_DEF)
-		return (NULL);	
+		|| cmd_node->type != CHAR_DEF)
+		return (NULL);
 	temp = cmd_node;
 	count = 0;
 	while (temp)
@@ -527,7 +521,7 @@ char	**path_extractor(void)
 	char		**paths;
 	t_global	*global;
 	int			i;
-	
+
 	global = global_struct();
 	i = -1;
 	while (global->ev[++i])
@@ -591,7 +585,7 @@ void	free_px(t_px *px)
 			close(px->fd_stdout);
 		free(px);
 		px = NULL;
-    }
+	}
 }
 
 void	free_struct_to_free(void)

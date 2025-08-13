@@ -5,14 +5,14 @@
 
 int	builtin_functions(t_ast *node, char **comms, t_px *px, int to_exit)
 {
-	int	exit_code;
+	int				exit_code;
 	t_prompt_line	*pl;
 
 	pl = to_prompt_line_struct();
 	exit_code = builtin_execution(node);
 	if (exit_code == NO_BUILTIN)
 		return (0);
-	else if(to_exit == TO_EXIT)
+	else if (to_exit == TO_EXIT)
 	{
 		free_arrays(comms);
 		free_px(px);
@@ -21,7 +21,7 @@ int	builtin_functions(t_ast *node, char **comms, t_px *px, int to_exit)
 		rl_clear_history();
 		free(pl->prompt);
 		exit(exit_code);
-	}		
+	}
 	else
 		return (exit_code);
 }
@@ -37,7 +37,7 @@ int	is_builtin(t_ast *n)
 		|| (ft_strncmp("exit", n->data, 4) == 0 && ft_strlen(n->data) == 4))
 		return (1);
 	else
-		return(0);
+		return (0);
 }
 
 int	builtin_execution(t_ast *n)
@@ -57,13 +57,13 @@ int	builtin_execution(t_ast *n)
 	else if (ft_strncmp("exit", n->data, 4) == 0 && ft_strlen(n->data) == 4)
 		return (exit_builtin(n->left));
 	else
-		return(NO_BUILTIN);
+		return (NO_BUILTIN);
 }
 
 int	pwd_builtin(void)
 {
 	size_t		size;
-	char	buffer[1024];
+	char		buffer[1024];
 
 	size = 1024;
 	getcwd(buffer, size);
@@ -83,7 +83,7 @@ int	echo_builtin(t_ast *node)
 	{
 		ft_putstr_fd("\n", STDOUT_FILENO);
 		return (EXIT_SUCCESS);
-	}	
+	}
 	if (ft_strncmp(node->data, "-n", 2) == 0 && ft_strlen(node->data) == 2)
 	{
 		node = node->left;
@@ -148,7 +148,7 @@ int	cd_builtin(t_ast *node)
 			else
 			{
 				update_env("OLDPWD=", buffer, NULL);
-				update_env("PWD=",home, home);
+				update_env("PWD=", home, home);
 				return (EXIT_SUCCESS);
 			}
 		}
@@ -267,7 +267,7 @@ void	print_export_builtin(void)
 	global = global_struct();
 	i = -1;
 	if (global->ev == NULL)
-		return;
+		return ;
 	while (global->ev[++i])
 		printf("declare -x %s\n", global->ev[i]);
 }
@@ -280,7 +280,7 @@ void	print_env_builtin(void)
 	global = global_struct();
 	i = 0;
 	if (global->ev == NULL)
-		return;
+		return ;
 	while (global->ev[i])
 	{
 		if (ft_strnstr(global->ev[i], "=", ft_strlen(global->ev[i])) != NULL)
@@ -298,7 +298,7 @@ int	check_valid_export_aux(char *str)
 	i = -1;
 	while (str[++i])
 	{
-		if(!ft_isalnum(str[i]) && str[i] != '_')
+		if (!ft_isalnum(str[i]) && str[i] != '_')
 			return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);
@@ -316,7 +316,7 @@ int	check_valid_export(char *str)
 		ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
 		return (EXIT_FAILURE);
 	}
-	es_pos = ft_strchr(str, '='); 
+	es_pos = ft_strchr(str, '=');
 	if (es_pos != NULL)
 		env_to_change = ft_substr(str, 0, es_pos - str);
 	else
@@ -327,7 +327,7 @@ int	check_valid_export(char *str)
 		ft_putstr_fd(env_to_change, STDERR_FILENO);
 		ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
 		if (es_pos != NULL)
-			free(env_to_change);		
+			free(env_to_change);
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);
@@ -345,7 +345,7 @@ int	export_builtin(t_ast *node)
 	{
 		if (check_valid_export(node->data) == EXIT_FAILURE)
 			return (EXIT_FAILURE);
-		es_pos = ft_strchr(node->data, '='); 
+		es_pos = ft_strchr(node->data, '=');
 		if (es_pos != NULL)
 		{
 			env_to_change = ft_substr(node->data, 0, es_pos - node->data);

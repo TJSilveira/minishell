@@ -5,7 +5,7 @@
 void	print_ast_node(t_ast *node)
 {
 	if (node == NULL)
-		return;	
+		return ;
 	printf("===============\n");
 	printf("Node address: %p\n", node);
 	printf("Node type: %i\n", node->type);
@@ -20,7 +20,7 @@ void	print_ast_sexpr(t_ast *root)
 	if (!root)
 	{
 		printf("()\n");
-		return;
+		return ;
 	}
 	ast_to_sexpr(root);
 	printf("\n");
@@ -49,13 +49,12 @@ void	print_node_leafs(t_ast *node)
 void	ast_to_sexpr(t_ast *node)
 {
 	if (!node)
-		return;
-
+		return ;
 	if (!node->left && !node->right)
 	{
 		if (node->data)
 			printf("%s", node->data);
-		return;
+		return ;
 	}
 	printf("(");
 	if (node->data)
@@ -90,7 +89,7 @@ t_ast	*create_ast_node(int type, char *content)
 t_ast	*create_ast_structure(t_token *token, t_ast *l_node, t_ast *r_node)
 {
 	t_ast	*node;
-	
+
 	node = create_ast_node(token->type, token->data);
 	node->left = l_node;
 	node->right = r_node;
@@ -150,6 +149,22 @@ void	ast_node_addback(t_ast *l_node, t_token *token)
 	l_node = first_l_node;
 }
 
+void	ast_node_placeback_aux_right(t_ast **node_root, t_ast *node_toadd)
+{
+	t_ast	*first_node;
+
+	if ((*node_root)->right == NULL)
+	{
+		(*node_root)->right = node_toadd;
+		return ;
+	}
+	first_node = (*node_root)->right;
+	while ((*node_root)->right->right)
+		(*node_root)->right = (*node_root)->right->right;
+	(*node_root)->right->right = node_toadd;
+	(*node_root)->right = first_node;
+}
+
 void	ast_node_placeback(t_ast **node_root, t_ast *node_toadd, int side)
 {
 	t_ast	*first_node;
@@ -170,21 +185,10 @@ void	ast_node_placeback(t_ast **node_root, t_ast *node_toadd, int side)
 		while ((*node_root)->left->left)
 			(*node_root)->left = (*node_root)->left->left;
 		(*node_root)->left->left = node_toadd;
-		(*node_root)->left = first_node; 
+		(*node_root)->left = first_node;
 	}
 	else
-	{
-		if ((*node_root)->right == NULL)
-		{
-			(*node_root)->right = node_toadd;
-			return ;
-		}
-		first_node = (*node_root)->right;
-		while ((*node_root)->right->right)
-			(*node_root)->right = (*node_root)->right->right;
-		(*node_root)->right->right = node_toadd;
-		(*node_root)->right = first_node; 
-	}
+		ast_node_placeback_aux_right(node_root, node_toadd);
 }
 
 /* End of AUX functions */
@@ -209,7 +213,6 @@ void	free_parser_struct(t_parser *par)
 		free(par->root);
 		free(par);
 	}
-	
 }
 
 /* End of Free functions*/
@@ -223,7 +226,7 @@ void	ast_token_next(t_parser *par)
 
 t_parser	*init_paser(t_lexer *lex)
 {
-	t_parser *par;
+	t_parser	*par;
 
 	par = malloc(sizeof(t_parser));
 	par->root = malloc(sizeof(t_ast *));
@@ -231,7 +234,7 @@ t_parser	*init_paser(t_lexer *lex)
 		return (NULL);
 	par->initial_token = lex->first_token;
 	par->curr_token = lex->first_token;
-	return(par);
+	return (par);
 }
 
 void	infix_binding_power(int type, t_bp *bp)
@@ -253,67 +256,84 @@ void	infix_binding_power(int type, t_bp *bp)
 	}
 }
 
+void	init_command_structure(t_command *c)
+{
+	c->file = NULL;
+	c->cmd = NULL;
+	c->redi = NULL;
+	c->redi_root = NULL;
+	c->token_prev = NULL;
+}
+
+int	parse_simple_command_redirect_token(t_parser *par, t_command *c)
+{
+	c->token_redirect = par->curr_token;
+	par->curr_token = par->curr_token->next;
+	if (!is_default_token(par->curr_token->type))
+	{
+		ft_putstr_fd("Error: syntax error near unexpecter token `newline'", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	c->file = create_ast_node(CHAR_DEF, par->curr_token->data);
+	c->redi = create_ast_structure(c->token_redirect, NULL, c->file);
+	ast_node_placeback(&c->redi_root, c->redi, RIGHT);
+	c->token_prev = par->curr_token;
+	par->curr_token = par->curr_token->next;
+	return (EXIT_SUCCESS);
+}
+
+void	parse_simple_command_default_token(t_parser *par, t_command *c)
+{
+	if (c->cmd == NULL)
+		c->cmd = create_ast_node(CHAR_DEF, par->curr_token->data);
+	else
+		ast_node_addback(c->cmd, par->curr_token);
+	c->token_prev = par->curr_token;
+	par->curr_token = par->curr_token->next;
+}
+
+void	parse_simple_command_oparen_token(t_parser *par, t_command *c)
+{
+	par->curr_token = par->curr_token->next;
+	c->cmd = parser_function(par, 0);
+	par->curr_token = par->curr_token->next;
+}
+
 t_ast	*parse_simple_command(t_parser *par)
 {
-	t_ast	*file;
-	t_ast	*cmd;
-	t_ast	*redi;
-	t_ast	*redi_root;
-	t_token	*token_redirect;
-	t_token	*token_prev;
+	t_command	c;
+	// int			f;
 
-	file = NULL;
-	cmd = NULL;
-	redi = NULL;
-	redi_root = NULL;
-	token_prev = NULL;
-
+	init_command_structure(&c);
 	while (par->curr_token && !is_operator_token(par->curr_token->type))
 	{
-		if (token_prev && (is_default_token(token_prev->type) || is_redirect_token(token_prev->type)) &&  par->curr_token->type == CHAR_OPAREN)
+		if (c.token_prev && (is_default_token(c.token_prev->type)
+			|| is_redirect_token(c.token_prev->type))
+			&&  par->curr_token->type == CHAR_OPAREN)
 		{
-			ft_putstr_fd("syntax error near unexpected token `('\n", STDERR_FILENO);
+			ft_putstr_fd("syntax error near unexpected token `('\n", 2);
 			return (NULL);
 		}
 		else if (is_redirect_token(par->curr_token->type))
 		{
-			token_redirect = par->curr_token;
-			par->curr_token = par->curr_token->next;
-			if (!is_default_token(par->curr_token->type))
-			{
-				ft_putstr_fd("Error: syntax error near unexpecter token `newline'", STDERR_FILENO);
+			if (parse_simple_command_redirect_token(par, &c) == EXIT_FAILURE)
 				return (NULL);
-			}
-			file = create_ast_node(CHAR_DEF, par->curr_token->data);
-			redi = create_ast_structure(token_redirect, NULL, file);
-			ast_node_placeback(&redi_root, redi, RIGHT);
-			token_prev = par->curr_token;
-			par->curr_token = par->curr_token->next;
 		}
-		else if(is_default_token(par->curr_token->type))
-		{
-			if (cmd == NULL)
-				cmd = create_ast_node(CHAR_DEF, par->curr_token->data);
-			else
-				ast_node_addback(cmd, par->curr_token);
-			token_prev = par->curr_token;
-			par->curr_token = par->curr_token->next;
-		}
+		else if (is_default_token(par->curr_token->type))
+			parse_simple_command_default_token(par, &c);
 		else if (par->curr_token->type == CHAR_OPAREN)
 		{
-			par->curr_token = par->curr_token->next;
-			cmd = parser_function(par, 0);
-			par->curr_token = par->curr_token->next;
-			return (cmd);
+			parse_simple_command_oparen_token(par, &c);
+			return (c.cmd);
 		}
 		else
-			break;
+			break ;
 	}
-	if (cmd == NULL && redi_root != NULL)
-		cmd = redi_root;
-	else if (cmd != NULL && redi_root != NULL)
-		cmd->right = redi_root;
-	return (cmd);
+	if (c.cmd == NULL && c.redi_root != NULL)
+		c.cmd = c.redi_root;
+	else if (c.cmd != NULL && c.redi_root != NULL)
+		c.cmd->right = c.redi_root;
+	return (c.cmd);
 }
 
 int	parser_function_loop(t_parser *par, int min_bp, t_ast **l_node, t_ast **r_node)
@@ -333,10 +353,10 @@ int	parser_function_loop(t_parser *par, int min_bp, t_ast **l_node, t_ast **r_no
 			return (EXIT_FAILURE);
 		}
 		infix_binding_power(par->curr_token->type, &bp);
-		if(bp.l != -1 && bp.r != -1)
+		if (bp.l != -1 && bp.r != -1)
 		{
 			if (bp.l < min_bp)
-				break;
+				break ;
 			op = par->curr_token;
 			par->curr_token = par->curr_token->next;
 			if (par->curr_token == NULL || par->curr_token->type == CHAR_CPAREN)
@@ -347,9 +367,9 @@ int	parser_function_loop(t_parser *par, int min_bp, t_ast **l_node, t_ast **r_no
 			
 			*r_node = parser_function(par, bp.r);
 			*l_node = create_ast_structure(op, *l_node, *r_node);
-			continue;
+			continue ;
 		}
-		break;
+		break ;
 	}
 	return (EXIT_SUCCESS);
 }

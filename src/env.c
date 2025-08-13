@@ -1,7 +1,8 @@
 #include "../includes/minishell.h"
 
-/* Checks whether env_to_change exists. If yes, change it to new_env. If not, add it to the end.*/
-void	update_env(char *env_to_change, char *new_env, char *to_free)
+/* Checks whether env_to_change exists. If yes, change it to new_env. 
+If not, add it to the end.*/
+void	update_env(char *ev_ch, char *new_env, char *to_free)
 {
 	t_global	*global;
 	char		*to_add;
@@ -9,9 +10,9 @@ void	update_env(char *env_to_change, char *new_env, char *to_free)
 
 	count = -1;
 	global = global_struct();
-	if(global->ev == NULL)
+	if (global->ev == NULL)
 	{
-		to_add = ft_strjoin(env_to_change, new_env);
+		to_add = ft_strjoin(ev_ch, new_env);
 		add_env(to_add);
 		free(to_add);
 	}
@@ -19,22 +20,22 @@ void	update_env(char *env_to_change, char *new_env, char *to_free)
 	{
 		while (global->ev[++count])
 		{
-			if (ft_strncmp(env_to_change, global->ev[count], ft_strlen(env_to_change)) == 0
-					&& (global->ev[count][ft_strlen(env_to_change)] == 0
-					|| global->ev[count][ft_strlen(env_to_change)] == '='))
-				break;
+			if (ft_strncmp(ev_ch, global->ev[count], ft_strlen(ev_ch)) == 0
+				&& (global->ev[count][ft_strlen(ev_ch)] == 0
+				|| global->ev[count][ft_strlen(ev_ch)] == '='))
+				break ;
 		}
 		if (global->ev[count])
 		{
 			if (ft_strlen(new_env) != 0)
 			{
 				free(global->ev[count]);
-				global->ev[count] = ft_strjoin(env_to_change, new_env);
+				global->ev[count] = ft_strjoin(ev_ch, new_env);
 			}
 		}
 		else
 		{
-			to_add = ft_strjoin(env_to_change, new_env);
+			to_add = ft_strjoin(ev_ch, new_env);
 			add_env(to_add);
 			free(to_add);
 		}
@@ -51,7 +52,8 @@ void	remove_env_aux(int count)
 
 	global = global_struct();
 	i = -1;
-	while (global->ev[++i]);
+	while (global->ev[i])
+		i++;
 	if (i == 1)
 	{
 		free(global->ev[0]);
@@ -74,7 +76,7 @@ void	remove_env_aux(int count)
 	global->ev = new_env;
 }
 
-void	remove_env(char *env_to_remove)
+void	remove_env(char *ev_rmv)
 {
 	t_global	*global;
 	int			count;
@@ -85,8 +87,8 @@ void	remove_env(char *env_to_remove)
 		return ;
 	while (global->ev[++count])
 	{
-		if (ft_strncmp(env_to_remove, global->ev[count], ft_strlen(env_to_remove)) == 0)
-			break;
+		if (ft_strncmp(ev_rmv, global->ev[count], ft_strlen(ev_rmv)) == 0)
+			break ;
 	}
 	if (global->ev[count])
 		remove_env_aux(count);
@@ -100,9 +102,9 @@ void	add_env(char *to_add)
 	int			i;
 
 	global = global_struct();
-	if(global->ev == NULL)
+	if (global->ev == NULL)
 	{
-		global->ev = malloc(sizeof(char*) * (2));
+		global->ev = malloc(sizeof(char *) * (2));
 		global->ev[0] = ft_strdup(to_add);
 		global->ev[1] = NULL;
 		return ;
@@ -112,7 +114,7 @@ void	add_env(char *to_add)
 		count = 0;
 		while (global->ev[count])
 			count++;
-		new_env = malloc(sizeof(char*) * (count + 2));
+		new_env = malloc(sizeof(char *) * (count + 2));
 		i = -1;
 		while (++i < count)
 			new_env[i] = global->ev[i];
@@ -125,7 +127,7 @@ void	add_env(char *to_add)
 
 char	*find_ev(char *to_expand)
 {
-	t_global 	*global;
+	t_global	*global;
 	int			i;
 	char		*result;
 
@@ -134,10 +136,10 @@ char	*find_ev(char *to_expand)
 	while (global->ev[++i])
 	{
 		if (ft_strncmp(to_expand, global->ev[i], ft_strlen(to_expand)) == 0
-				&& (global->ev[i][ft_strlen(to_expand)]) == '=')
+			&& (global->ev[i][ft_strlen(to_expand)]) == '=')
 		{
 			result = ft_substr(global->ev[i], ft_strlen(to_expand) + 1,
-						ft_strlen(global->ev[i]));
+					ft_strlen(global->ev[i]));
 			return (result);
 		}
 	}

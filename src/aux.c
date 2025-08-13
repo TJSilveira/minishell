@@ -1,6 +1,6 @@
 #include "../includes/minishell.h"
 
-t_global *global_struct(void)
+t_global	*global_struct(void)
 {
 	static t_global	global;
 
@@ -21,14 +21,14 @@ void	init_ev(char *envp[])
 
 	global = global_struct();
 	count = 0;
-	if(envp == NULL || envp[0] == NULL)
+	if (envp == NULL || envp[0] == NULL)
 	{
 		global->ev = NULL;
 		return ;
 	}
 	while (envp[count])
 		count++;
-	global->ev = malloc(sizeof(char*) * (count + 1));
+	global->ev = malloc(sizeof(char *) * (count + 1));
 	count = -1;
 	while (envp[++count])
 		global->ev[count] = ft_strdup(envp[count]);
@@ -37,7 +37,7 @@ void	init_ev(char *envp[])
 
 void	init_global_struct(char *envp[])
 {
-	t_global *global;
+	t_global	*global;
 
 	global = global_struct();
 	global->exit_code = 0;
@@ -51,7 +51,7 @@ void	free_global_struct(void)
 
 	global = global_struct();
 	if (global->ev == NULL)
-		return;	
+		return ;
 	i = -1;
 	while (global->ev[++i])
 		free(global->ev[i]);

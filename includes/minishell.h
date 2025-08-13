@@ -107,6 +107,16 @@ typedef struct s_parser
 	int		count_token;
 }	t_parser;
 
+typedef struct s_command
+{
+	t_ast	*file;
+	t_ast	*cmd;
+	t_ast	*redi;
+	t_ast	*redi_root;
+	t_token	*token_redirect;
+	t_token	*token_prev;
+}	t_command;
+
 typedef	struct s_to_free
 {
 	t_parser	*par;
@@ -207,7 +217,7 @@ int		echo_builtin(t_ast *node);
 int		cd_builtin(t_ast *node);
 int		exit_builtin(t_ast *node);
 int		export_builtin(t_ast *node);
-void	remove_env(char *env_to_remove);
+void	remove_env(char *ev_rmv);
 void	remove_env_aux(int count);
 int		unset_builtin(t_ast *node);
 int		env_builtin(t_ast *node);
@@ -215,7 +225,7 @@ t_prompt_line	*to_prompt_line_struct(void);
 
 /* env.c */
 void	add_env(char *to_add);
-void	update_env(char *env_to_change, char *new_env, char *to_free);
+void	update_env(char *ev_ch, char *new_env, char *to_free);
 char	*find_ev(char *to_expand);
 void	remove_env(char *env_to_remove);
 void	remove_env_aux(int count);

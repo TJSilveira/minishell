@@ -21,8 +21,8 @@ void	ft_rmvchr(char *str, char *char_to_remove)
 	i = -1;
 	while (str[++i])
 	{
-		if(&str[i] == char_to_remove)
-			break;
+		if (&str[i] == char_to_remove)
+			break ;
 	}
 	while (str[i])
 	{
