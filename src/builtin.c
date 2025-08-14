@@ -1,7 +1,8 @@
 #include "../includes/minishell.h"
 
 /* TODO:
-==> Check If the export function is blocking variable names that should not be allowed */
+==> Check If the export function is blocking variable names 
+that should not be allowed */
 
 int	builtin_functions(t_ast *node, char **comms, t_px *px, int to_exit)
 {
@@ -72,23 +73,11 @@ int	pwd_builtin(void)
 	return (EXIT_SUCCESS);
 }
 
-int	echo_builtin(t_ast *node)
+void	echo_builtin_aux(t_ast *node, int option)
 {
-	int		count;
 	t_ast	*initial_node;
-	int		option;
+	int		count;
 
-	option = 0;
-	if (node == NULL)
-	{
-		ft_putstr_fd("\n", STDOUT_FILENO);
-		return (EXIT_SUCCESS);
-	}
-	if (ft_strncmp(node->data, "-n", 2) == 0 && ft_strlen(node->data) == 2)
-	{
-		node = node->left;
-		option = 1;
-	}
 	initial_node = node;
 	count = 0;
 	while (node)
@@ -110,14 +99,74 @@ int	echo_builtin(t_ast *node)
 	}
 	if (option == 0)
 		ft_putstr_fd("\n", STDOUT_FILENO);
+}
+
+int	echo_builtin(t_ast *node)
+{
+	int		option;
+
+	option = 0;
+	if (node == NULL)
+	{
+		ft_putstr_fd("\n", STDOUT_FILENO);
+		return (EXIT_SUCCESS);
+	}
+	if (ft_strncmp(node->data, "-n", 2) == 0 && ft_strlen(node->data) == 2)
+	{
+		node = node->left;
+		option = 1;
+	}
+	echo_builtin_aux(node, option);
 	return (EXIT_SUCCESS);
+}
+
+int	cd_builtin_no_args(char *buffer)
+{
+	char	*home;
+
+	home = find_ev("HOME");
+	if (home[0] == 0)
+	{
+		free(home);
+		ft_putstr_fd("cd: HOME not set\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	else
+	{
+		if (chdir(home) == -1)
+		{
+			free(home);
+			ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
+			return (EXIT_FAILURE);
+		}
+		else
+		{
+			update_env("OLDPWD=", buffer, NULL);
+			update_env("PWD=", home, home);
+			return (EXIT_SUCCESS);
+		}
+	}
+}
+
+int	cd_builtin_1_arg(t_ast *initial_node, char *buffer)
+{
+	if (chdir(initial_node->data) == -1)
+	{
+		ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	else
+	{
+		update_env("OLDPWD=", buffer, NULL);
+		update_env("PWD=", initial_node->data, NULL);
+		return (EXIT_SUCCESS);
+	}
 }
 
 int	cd_builtin(t_ast *node)
 {
 	int		count;
 	t_ast	*initial_node;
-	char	*home;
 	char	buffer[1024];
 
 	getcwd(buffer, 1024);
@@ -129,44 +178,9 @@ int	cd_builtin(t_ast *node)
 		node = node->left;
 	}
 	if (count == 0)
-	{
-		home = find_ev("HOME");
-		if (home[0] == 0)
-		{
-			free(home);
-			ft_putstr_fd("cd: HOME not set\n", STDERR_FILENO);
-			return (EXIT_FAILURE);
-		}
-		else
-		{
-			if (chdir(home) == -1)
-			{
-				free(home);
-				ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
-				return (EXIT_FAILURE);
-			}
-			else
-			{
-				update_env("OLDPWD=", buffer, NULL);
-				update_env("PWD=", home, home);
-				return (EXIT_SUCCESS);
-			}
-		}
-	}
+		return (cd_builtin_no_args(buffer));
 	else if (count == 1)
-	{
-		if (chdir(initial_node->data) == -1)
-		{
-			ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
-			return (EXIT_FAILURE);
-		}
-		else
-		{
-			update_env("OLDPWD=", buffer, NULL);
-			update_env("PWD=", initial_node->data, NULL);
-			return (EXIT_SUCCESS);
-		}
-	}
+		return (cd_builtin_1_arg(initial_node, buffer));
 	ft_putstr_fd("cd: too many arguments\n", STDERR_FILENO);
 	return (EXIT_FAILURE);
 }
@@ -349,7 +363,8 @@ int	export_builtin(t_ast *node)
 		if (es_pos != NULL)
 		{
 			env_to_change = ft_substr(node->data, 0, es_pos - node->data);
-			new_env = ft_substr(node->data, es_pos - node->data, ft_strlen(node->data) - (es_pos - node->data));
+			new_env = ft_substr(node->data, es_pos - node->data,
+					ft_strlen(node->data) - (es_pos - node->data));
 			update_env(env_to_change, new_env, env_to_change);
 			free(new_env);
 		}

@@ -20,32 +20,38 @@ int	open_fd(char *path, int option, t_px *px)
 	return (fd);
 }
 
+void	write_line_break(int fd, t_px *px, char *line, char *limitor)
+{
+	size_t			size;
+	t_prompt_line	*pl;
+
+	pl = to_prompt_line_struct();
+	size = ft_strlen(limitor);
+	if (size == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0)
+	{
+		free(line);
+		free(limitor);
+		close(fd);
+		get_next_line(-1);
+		free_px(px);
+		free_global_struct();
+		free_struct_to_free();
+		free(pl->prompt);
+		exit(EXIT_SUCCESS);
+	}
+}
+
 int	write_line(char *limit, int fd, t_px *px)
 {
 	char			*line;
 	char			*limitor;
-	size_t			size;
-	t_prompt_line	*pl;
 
 	limitor = ft_strjoin(limit, "\n");
-	size = ft_strlen(limitor);
-	pl = to_prompt_line_struct();
 	while (1)
 	{
 		write(px->fd_stdout, "> ", 2);
 		line = get_next_line(0);
-		if (size == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0)
-		{
-			free(line);
-			free(limitor);
-			close(fd);
-			get_next_line(-1);
-			free_px(px);
-			free_global_struct();
-			free_struct_to_free();
-			free(pl->prompt);
-			exit(EXIT_SUCCESS);
-		}
+		write_line_break(fd, px, line, limitor);
 		if (write(fd, line, ft_strlen(line)) == -1)
 			error_handler("Writing lines", NULL, 1, NULL);
 		free(line);
@@ -90,7 +96,8 @@ void	redirections_files_setup(int fd, int type)
 	else
 	{
 		if (dup2(fd, STDOUT_FILENO) == -1)
-			error_handler("Duplicating write-end pipe to STDOUT", NULL, 1, NULL);
+			error_handler("Duplicating write-end pipe to STDOUT",
+				NULL, 1, NULL);
 		close(fd);
 	}
 }
@@ -104,17 +111,7 @@ int	redirections_setup(t_ast *root, t_px *px)
 		if (is_redirect_token(root->type))
 		{
 			fd = open_fd(root->right->data, root->type, px);
-			if (errno == EACCES)
-			{
-				restore_fd(px);
-				ft_putstr_fd("minishell: ", STDERR_FILENO);
-				ft_putstr_fd(root->right->data, STDERR_FILENO);
-				ft_putstr_fd(": ", STDERR_FILENO);
-				ft_putstr_fd(strerror(errno), STDERR_FILENO);
-				ft_putstr_fd("\n", STDERR_FILENO);
-				return (EXIT_FAILURE);
-			}
-			else if (fd == -1)
+			if (errno == EACCES || fd == -1)
 			{
 				restore_fd(px);
 				ft_putstr_fd("minishell: ", STDERR_FILENO);
@@ -177,14 +174,9 @@ int	executor_aux(t_px *px, t_ast *root)
 	if (root == NULL)
 		return (EXIT_SUCCESS);
 	if (is_default_token(root->type))
-	{
-		exit_code = executor(px, root);
-		return (exit_code);
-	}
+		return (executor(px, root));
 	else if (root->type == CHAR_PIPE)
-	{
 		return (executor_pipe(px, root));
-	}
 	else if (root->type == CHAR_AND)
 	{
 		exit_code = executor_aux(px, root->left);
@@ -210,56 +202,70 @@ void	restore_fd(t_px *px)
 	close(px->fd_stdout);
 }
 
+int	executor_pipe_left(t_px *px, t_ast *root, int pipe_fd[2])
+{
+	int	exit_code;
+
+	child_signals();
+	dup2(pipe_fd[WRITE], STDOUT_FILENO);
+	close(pipe_fd[READ]);
+	exit_code = execute_subshell(px, root->left);
+	free_struct_to_free();
+	free_global_struct();
+	exit (exit_code);
+}
+
+int	executor_pipe_right(t_px *px, t_ast *root, int pipe_fd[2])
+{
+	int	exit_code;
+
+	child_signals();
+	dup2(pipe_fd[READ], STDIN_FILENO);
+	close(pipe_fd[WRITE]);
+	exit_code = execute_subshell(px, root->right);
+	free_struct_to_free();
+	free_global_struct();
+	exit (exit_code);
+}
+
+int	executor_pipe_return(int pipe_fd[2], int pids[2], int *status)
+{
+	close(pipe_fd[READ]);
+	close(pipe_fd[WRITE]);
+	waitpid(pids[0], status, 0);
+	if (WIFSIGNALED(*status))
+		write(1, "\n", 1);
+	waitpid(pids[1], status, 0);
+	if (WIFEXITED(*status))
+		return (WEXITSTATUS(*status));
+	else if (WIFSIGNALED(*status))
+	{
+		if (WTERMSIG(*status) == SIGINT)
+			write(1, "\n", 1);
+		else if (WTERMSIG(*status) == SIGQUIT)
+			write(1, "Quit (core dumped)\n", 19);
+		return (WTERMSIG(*status) + 128);
+	}
+	return (EXIT_FAILURE);
+}
+
 int	executor_pipe(t_px *px, t_ast *root)
 {
 	int	pipe_fd[2];
 	int	pids[2];
 	int	status;
-	int	exit_code;
 
 	status = 0;
 	if (pipe(pipe_fd) != 0)
 		error_handler("Laying down the pipe(s)", NULL, 1, NULL);
 	pids[0] = fork();
 	if (pids[0] == 0)
-	{
-		child_signals();
-		dup2(pipe_fd[WRITE], STDOUT_FILENO);
-		close(pipe_fd[READ]);
-		exit_code = execute_subshell(px, root->left);
-		free_struct_to_free();
-		free_global_struct();
-		exit (exit_code);
-	}
+		executor_pipe_left(px, root, pipe_fd);
 	ignore_signals();
 	pids[1] = fork();
 	if (pids[1] == 0)
-	{
-		child_signals();
-		dup2(pipe_fd[READ], STDIN_FILENO);
-		close(pipe_fd[WRITE]);
-		exit_code = execute_subshell(px, root->right);
-		free_struct_to_free();
-		free_global_struct();
-		exit (exit_code);
-	}
-	close(pipe_fd[READ]);
-	close(pipe_fd[WRITE]);
-	waitpid(pids[0], &status, 0);
-	if (WIFSIGNALED(status))
-		write(1, "\n", 1);
-	waitpid(pids[1], &status, 0);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	else if (WIFSIGNALED(status))
-	{
-		if (WTERMSIG(status) == SIGINT)
-			write(1, "\n", 1);
-		else if (WTERMSIG(status) == SIGQUIT)
-			write(1, "Quit (core dumped)\n", 19);
-		return (WTERMSIG(status) + 128);
-	}
-	return (EXIT_FAILURE);
+		executor_pipe_right(px, root, pipe_fd);
+	return (executor_pipe_return(pipe_fd, pids, &status));
 }
 
 int	execute_subshell(t_px *px, t_ast *root)
@@ -277,6 +283,23 @@ int	execute_subshell(t_px *px, t_ast *root)
 	free_px(px_subshell);
 	free(pl->prompt);
 	return (exit_code);
+}
+
+int	executor_return(int *status, int pid)
+{
+	ignore_signals();
+	waitpid(pid, status, 0);
+	if (WIFEXITED(*status))
+		return (WEXITSTATUS(*status));
+	else if (WIFSIGNALED(*status))
+	{
+		if (WTERMSIG(*status) == SIGINT)
+			write(1, "\n", 1);
+		else if (WTERMSIG(*status) == SIGQUIT)
+			write(1, "Quit (core dumped)\n", 19);
+		return (WTERMSIG(*status) + 128);
+	}
+	return (EXIT_FAILURE);
 }
 
 int	executor(t_px *px, t_ast *cmd_node)
@@ -301,19 +324,7 @@ int	executor(t_px *px, t_ast *cmd_node)
 		if (is_default_token(cmd_node->type))
 			exec_command(px, cmd_node);
 	}
-	ignore_signals();
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	else if (WIFSIGNALED(status))
-	{
-		if (WTERMSIG(status) == SIGINT)
-			write(1, "\n", 1);
-		else if (WTERMSIG(status) == SIGQUIT)
-			write(1, "Quit (core dumped)\n", 19);
-		return (WTERMSIG(status) + 128);
-	}
-	return (EXIT_FAILURE);
+	return (executor_return(&status, pid));
 }
 
 /* Executes a subtree that is only composed out of a builtin function. */
@@ -428,10 +439,45 @@ int	executor_function(t_ast *root_tree)
 
 /* Executor AUX functions */
 
-void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
+void	error_handler_efault(char *file_name)
+{
+	ft_putstr_fd(strerror(errno), STDERR_FILENO);
+	ft_putstr_fd("\n", STDERR_FILENO);
+	if (file_name)
+		free(file_name);
+	exit(126);
+}
+
+void	error_handler_eacces(char *file_name)
 {
 	struct stat	file_stat;
 
+	if (stat(file_name, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
+	{
+		ft_putstr_fd("Is a directory\n", STDERR_FILENO);
+		free(file_name);
+		exit(126);
+	}
+	else
+	{
+		ft_putstr_fd("Permission denied\n", STDERR_FILENO);
+		free(file_name);
+		exit(126);
+	}
+}
+
+void	error_handler_enoent(char *file_name)
+{
+	if (ft_strchr(file_name, '/'))
+		ft_putstr_fd("No such file or directory\n", STDERR_FILENO);
+	else
+		ft_putstr_fd("command not found\n", STDERR_FILENO);
+	free(file_name);
+	exit(127);
+}
+
+void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
+{
 	if (px)
 		free_px(px);
 	ft_putstr_fd("minishell: ", STDERR_FILENO);
@@ -448,37 +494,11 @@ void	error_handler(char *msg, char *file_name, int error_code, t_px *px)
 	if (error_code != -1)
 		exit(error_code);
 	if (errno == EFAULT)
-	{
-		ft_putstr_fd(strerror(errno), STDERR_FILENO);
-		ft_putstr_fd("\n", STDERR_FILENO);
-		if (file_name)
-			free(file_name);
-		exit(126);
-	}
+		error_handler_EFAULT(file_name);
 	else if (errno == EACCES)
-	{
-		if (stat(file_name, &file_stat) == 0 && S_ISDIR(file_stat.st_mode))
-		{
-			ft_putstr_fd("Is a directory\n", STDERR_FILENO);
-			free(file_name);
-			exit(126);
-		}
-		else
-		{
-			ft_putstr_fd("Permission denied\n", STDERR_FILENO);
-			free(file_name);
-			exit(126);
-		}
-	}
+		error_handler_EACCES(file_name);
 	else if (errno == ENOENT && file_name)
-	{
-		if (ft_strchr(file_name, '/'))
-			ft_putstr_fd("No such file or directory\n", STDERR_FILENO);
-		else
-			ft_putstr_fd("command not found\n", STDERR_FILENO);
-		free(file_name);
-		exit(127);
-	}
+		error_handler_ENOENT(file_name);
 }
 
 void	malloc_error_handler(void *ptr, int error_code)

@@ -271,7 +271,8 @@ int	parse_simple_command_redirect_token(t_parser *par, t_command *c)
 	par->curr_token = par->curr_token->next;
 	if (!is_default_token(par->curr_token->type))
 	{
-		ft_putstr_fd("Error: syntax error near unexpecter token `newline'", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpecter token `newline'\n",
+			STDERR_FILENO);
 		return (EXIT_FAILURE);
 	}
 	c->file = create_ast_node(CHAR_DEF, par->curr_token->data);
@@ -299,21 +300,36 @@ void	parse_simple_command_oparen_token(t_parser *par, t_command *c)
 	par->curr_token = par->curr_token->next;
 }
 
+int	parse_simple_command_parenthesis_check(t_parser *par, t_command	*c)
+{
+	if (c->token_prev && (is_default_token(c->token_prev->type)
+			|| is_redirect_token(c->token_prev->type))
+		&& par->curr_token->type == CHAR_OPAREN)
+	{
+		ft_putstr_fd("syntax error near unexpected token `('\n",
+			STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
+}
+
+void	parse_simple_command_tree_aggregation(t_command	*c)
+{
+	if (c->cmd == NULL && c->redi_root != NULL)
+		c->cmd = c->redi_root;
+	else if (c->cmd != NULL && c->redi_root != NULL)
+		c->cmd->right = c->redi_root;
+}
+
 t_ast	*parse_simple_command(t_parser *par)
 {
 	t_command	c;
-	// int			f;
 
 	init_command_structure(&c);
 	while (par->curr_token && !is_operator_token(par->curr_token->type))
 	{
-		if (c.token_prev && (is_default_token(c.token_prev->type)
-			|| is_redirect_token(c.token_prev->type))
-			&&  par->curr_token->type == CHAR_OPAREN)
-		{
-			ft_putstr_fd("syntax error near unexpected token `('\n", 2);
+		if (parse_simple_command_parenthesis_check(par, &c) == EXIT_FAILURE)
 			return (NULL);
-		}
 		else if (is_redirect_token(par->curr_token->type))
 		{
 			if (parse_simple_command_redirect_token(par, &c) == EXIT_FAILURE)
@@ -329,44 +345,59 @@ t_ast	*parse_simple_command(t_parser *par)
 		else
 			break ;
 	}
-	if (c.cmd == NULL && c.redi_root != NULL)
-		c.cmd = c.redi_root;
-	else if (c.cmd != NULL && c.redi_root != NULL)
-		c.cmd->right = c.redi_root;
+	parse_simple_command_tree_aggregation(&c);
 	return (c.cmd);
 }
 
-int	parser_function_loop(t_parser *par, int min_bp, t_ast **l_node, t_ast **r_node)
+int	parser_function_loop_inval_token(t_parser *par, t_ast **l_node)
+{
+	if ((is_default_token(par->curr_token->type)
+			|| is_redirect_token(par->curr_token->type))
+		&& ((*l_node)->type == CHAR_AND || (*l_node)->type == CHAR_OR))
+	{
+		ft_putstr_fd("minishell: syntax error near unexpected token `",
+			STDERR_FILENO);
+		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
+		ft_putstr_fd("'\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
+}
+
+int	par_fun_loop_tree_agg(t_parser *par, t_bp *bp, t_ast **l_n, t_ast **r_n)
+{
+	t_token		*op;
+
+	op = par->curr_token;
+	par->curr_token = par->curr_token->next;
+	if (par->curr_token == NULL || par->curr_token->type == CHAR_CPAREN)
+	{
+		ft_putstr_fd("Error: Binary operator missing right operand\n",
+			STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	*r_n = parser_function(par, bp->r);
+	*l_n = create_ast_structure(op, *l_n, *r_n);
+	return (EXIT_SUCCESS);
+}
+
+int	parser_function_loop(t_parser *par, int min_bp, t_ast **l_n, t_ast **r_n)
 {
 	t_bp		bp;
-	t_token		*op;
 
 	while (1)
 	{
 		if (par->curr_token == NULL || par->curr_token->type == CHAR_CPAREN)
 			break ;
-		else if ((is_default_token(par->curr_token->type) || is_redirect_token(par->curr_token->type)) && ((*l_node)->type == CHAR_AND || (*l_node)->type == CHAR_OR)) // to check better what is it doing
-		{
-			ft_putstr_fd("minishell: syntax error near unexpected token `", STDERR_FILENO);
-			ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
-			ft_putstr_fd("'\n", STDERR_FILENO);
+		else if (parser_function_loop_inval_token(par, l_n) == EXIT_FAILURE)
 			return (EXIT_FAILURE);
-		}
 		infix_binding_power(par->curr_token->type, &bp);
 		if (bp.l != -1 && bp.r != -1)
 		{
 			if (bp.l < min_bp)
 				break ;
-			op = par->curr_token;
-			par->curr_token = par->curr_token->next;
-			if (par->curr_token == NULL || par->curr_token->type == CHAR_CPAREN)
-			{
-				ft_putstr_fd("Error: Binary operator missing right operand\n",STDERR_FILENO);
+			if (par_fun_loop_tree_agg(par, &bp, l_n, r_n))
 				return (EXIT_FAILURE);
-			}
-			
-			*r_node = parser_function(par, bp.r);
-			*l_node = create_ast_structure(op, *l_node, *r_node);
 			continue ;
 		}
 		break ;

@@ -131,6 +131,16 @@ typedef	struct s_prompt_line
 	int		input_type;
 }	t_prompt_line;
 
+typedef struct s_expansion
+{
+	char	*start_str;
+	char	*end_str;
+	char	*final_str;
+	int		len_str;
+	int		len_final;
+}	t_expansion;
+
+
 /* lexer.c */
 int	check_matching_quotes(char *input);
 t_token	*get_last_token(t_lexer *lexer);

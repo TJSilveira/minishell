@@ -73,14 +73,12 @@ t_token	*add_token_back(t_lexer *lexer, int len_input)
 	}
 }
 
-int	check_matching_quotes(char *input)
+void	check_matching_quotes_aux(char *input, int *counter)
 {
 	int		i;
-	int		counter;
 	char	quote_type;
-	
+
 	i = 0;
-	counter = 0;
 	while (input[i])
 	{
 		if (input[i] == '\\' && (input[i + 1] == '\'' || input[i + 1] == '\"'))
@@ -88,15 +86,23 @@ int	check_matching_quotes(char *input)
 			i += 2;
 			continue ;
 		}
-		if (counter == 0 && (input[i] == '\"' || input[i] == '\''))
+		if (*counter == 0 && (input[i] == '\"' || input[i] == '\''))
 		{
-			counter++;
+			(*counter)++;
 			quote_type = input[i];
 		}
-		else if (counter == 1 && input[i] == quote_type)
-			counter = 0;
+		else if (*counter == 1 && input[i] == quote_type)
+			*counter = 0;
 		i++;
 	}
+}
+
+int	check_matching_quotes(char *input)
+{
+	int		counter;
+
+	counter = 0;
+	check_matching_quotes_aux(input, &counter);
 	if (counter > 0)
 	{
 		ft_putstr_fd("Error: Unclosed quotation detected\n", STDERR_FILENO);
@@ -105,28 +111,36 @@ int	check_matching_quotes(char *input)
 	return (EXIT_SUCCESS);
 }
 
-int	check_matching_parenthesis(t_lexer *lexer)
+int	check_matching_parenthesis_aux(t_lexer *lexer, int *counter)
 {
-	int		i;
-	int		counter;
 	t_token	*curr_token;
+	int		i;
 
-	i = -1;
-	counter = 0;
 	curr_token = lexer->first_token;
+	i = -1;
 	while (++i < lexer->count_token)
 	{
 		if (curr_token->type == CHAR_CPAREN)
-			counter--;
+			(*counter)--;
 		else if (curr_token->type == CHAR_OPAREN)
-			counter++;
-		if (counter < 0)
+			(*counter)++;
+		if ((*counter) < 0)
 		{
 			ft_putstr_fd("Error: Invalid Parenthesis\n", STDERR_FILENO);
 			return (EXIT_FAILURE);
 		}
 		curr_token = curr_token->next;
 	}
+	return (EXIT_SUCCESS);
+}
+
+int	check_matching_parenthesis(t_lexer *lexer)
+{
+	int		counter;
+
+	counter = 0;
+	if (check_matching_parenthesis_aux(lexer, &counter) == EXIT_FAILURE)
+		return (EXIT_FAILURE);
 	if (counter != 0)
 	{
 		ft_putstr_fd("Error: Invalid Parenthesis\n", STDERR_FILENO);
@@ -247,7 +261,7 @@ void	handle_def_1char(char *input, t_token_aux *aux, t_lexer *lexer, int *f)
 	}
 }
 
-void	handle_def_2char(char *input, t_token_aux *aux, t_lexer *lexer, int *f)
+void	handle_def_2char_aux(char *input, t_token_aux *aux, int *f)
 {
 	if (input[aux->i] == '>' && input[aux->i + 1] == '>')
 	{
@@ -269,6 +283,11 @@ void	handle_def_2char(char *input, t_token_aux *aux, t_lexer *lexer, int *f)
 		aux->curr_token->type = CHAR_OR;
 		(*f)++;
 	}
+}
+
+void	handle_def_2char(char *input, t_token_aux *aux, t_lexer *lexer, int *f)
+{
+	handle_def_2char_aux(input, aux, f);
 	if ((*f) == 1)
 	{
 		if (aux->j != 0)
@@ -378,7 +397,8 @@ void	clean_last_tokens(t_token_aux *aux, t_lexer *lexer)
 		temp = aux->curr_token;
 		free(temp->data);
 		free(temp);
-		aux->curr_token = get_previous_token(lexer->first_token, aux->curr_token);
+		aux->curr_token = get_previous_token(lexer->first_token,
+				aux->curr_token);
 		aux->curr_token->next = NULL;
 		lexer->count_token--;
 	}
@@ -388,43 +408,43 @@ void	clean_last_tokens(t_token_aux *aux, t_lexer *lexer)
 
 /* Start expansion functions */
 
-void	insert_expansion(t_token *token, int sta, int len, char *mid_str)
+void	insert_expansion_aux(t_token *token, t_expansion *e, char *mid_str)
 {
-	char	*start_str;
-	char	*end_str;
-	char	*final_str;
-	int		len_str;
-	int		len_final;
 	int		i;
 	int		j;
 
-	len_str = ft_strlen(token->data);
-	start_str = ft_substr(token->data, 0, sta);
-	end_str = ft_substr(token->data, sta + len, len_str - (sta + len));
-
-	len_final = 0;
-	len_final += ft_strlen(start_str);
-	len_final += ft_strlen(mid_str);
-	len_final += ft_strlen(end_str);
-	final_str = malloc(sizeof(char) * (len_final + 1));
-
 	i = -1;
-	while (start_str[++i])
-		final_str[i] = start_str[i];
+	while (e->start_str[++i])
+		e->final_str[i] = e->start_str[i];
 	j = i;
 	i = -1;
 	while (mid_str[++i])
-		final_str[i + j] = mid_str[i];
+		e->final_str[i + j] = mid_str[i];
 	j += i;
 	i = -1;
-	while (end_str[++i])
-		final_str[i + j] = end_str[i];
-	final_str[len_final] = 0;
-	free(start_str);
+	while (e->end_str[++i])
+		e->final_str[i + j] = e->end_str[i];
+	e->final_str[e->len_final] = 0;
+	free(e->start_str);
 	free(mid_str);
-	free(end_str);
+	free(e->end_str);
 	free(token->data);
-	token->data = final_str;
+	token->data = e->final_str;
+}
+
+void	insert_expansion(t_token *token, int sta, int len, char *mid_str)
+{
+	t_expansion	e;
+
+	e.len_str = ft_strlen(token->data);
+	e.start_str = ft_substr(token->data, 0, sta);
+	e.end_str = ft_substr(token->data, sta + len, e.len_str - (sta + len));
+	e.len_final = 0;
+	e.len_final += ft_strlen(e.start_str);
+	e.len_final += ft_strlen(mid_str);
+	e.len_final += ft_strlen(e.end_str);
+	e.final_str = malloc(sizeof(char) * (e.len_final + 1));
+	insert_expansion_aux(token, &e, mid_str);
 }
 
 int	token_quote_removal(t_token *token, int *i, int *status, int quote_type)
@@ -455,18 +475,49 @@ int	token_quote_removal(t_token *token, int *i, int *status, int quote_type)
 ===> create a new char* to hold the new version of the token after the expansion
 ===> hold a status in that keeps track if you entered into a part between ''
 */
+
+void	token_expansion_aux_ifs_while(t_token *t, int *i, int *j)
+{
+	while (t->data[*i + 1 + *j] != 0 && t->data[*i + 1 + *j] != ' '
+		&& t->data[*i + 1 + *j] != '\"' && t->data[*i + 1 + *j] != '\''
+		&& t->data[*i + 1 + *j] != '\\')
+		(*j)++;
+}
+
+void	token_expansion_aux_ifs(t_token *t, int *status, t_global *g, int *i)
+{
+	int		j;
+	char	*temp;
+	char	*to_expand;
+	int		len;
+
+	j = 0;
+	if (t->data[*i] == CHAR_DOLLAR && t->data[*i + 1] != 0
+		&& t->data[*i + 1] == '?' && *status != CHAR_QUOTE)
+	{
+		temp = ft_itoa(g->exit_code);
+		len = ft_strlen(temp);
+		insert_expansion(t, *i, len + 1, temp);
+	}
+	else if (t->data[*i] == CHAR_DOLLAR
+		&& t->data[*i + 1] != 0 && t->data[*i + 1] != ' '
+		&& t->data[*i + 1] != CHAR_DQUOTE && *status != CHAR_QUOTE)
+	{
+		token_expansion_aux_ifs_while(t, i, &j);
+		temp = ft_substr(t->data, *i + 1, j);
+		to_expand = find_ev(temp);
+		free(temp);
+		insert_expansion(t, *i, j + 1, to_expand);
+	}
+}
+
 void	token_expansion_aux(t_token *token)
 {
-	char		*temp;
-	char		*to_expand;
 	int			i;
-	int			j;
-	int			len;
 	t_global	*global;
 	int			status;
 
 	i = 0;
-	j = 0;
 	global = global_struct();
 	status = CHAR_DEF;
 	while (token->data[i])
@@ -475,35 +526,7 @@ void	token_expansion_aux(t_token *token)
 			continue ;
 		if (token_quote_removal(token, &i, &status, CHAR_DQUOTE))
 			continue ;
-		j = 0;
-		if (token->data[i] == CHAR_DOLLAR
-			&& token->data[i + 1] != 0
-			&& token->data[i + 1] == '?'
-			&& status != CHAR_QUOTE)
-		{
-			temp = ft_itoa(global->exit_code);
-			len = ft_strlen(temp);
-			insert_expansion(token, i, len + 1, temp);
-		}
-		else if (token->data[i] == CHAR_DOLLAR
-			&& token->data[i + 1] != 0
-			&& token->data[i + 1] != ' '
-			&& token->data[i + 1] != CHAR_DQUOTE
-			&& status != CHAR_QUOTE)
-		{
-			while (token->data[i + 1 + j] != 0
-				&& token->data[i + 1 + j] != ' '
-				&& token->data[i + 1 + j] != '\"'
-				&& token->data[i + 1 + j] != '\''
-				&& token->data[i + 1 + j] != '\\')
-			{
-				j++;
-			}
-			temp = ft_substr(token->data, i + 1, j);
-			to_expand = find_ev(temp);
-			free(temp);
-			insert_expansion(token, i, j + 1, to_expand);
-		}
+		token_expansion_aux_ifs(token, &status, global, &i);
 		i++;
 	}
 }
