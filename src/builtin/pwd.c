@@ -1,26 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   pwd.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tsilveir <tsilveir@student.42luxembourg.l  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/18 18:15:50 by tsilveir          #+#    #+#             */
-/*   Updated: 2025/08/18 18:15:51 by tsilveir         ###   ########.fr       */
+/*   Created: 2025/08/18 16:50:18 by tsilveir          #+#    #+#             */
+/*   Updated: 2025/08/18 16:50:19 by tsilveir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
+#include "../../includes/minishell.h"
 
-int	main(int argc, char *argv[], char *envp[])
+int	pwd_builtin(void)
 {
-	(void)argv;
-	if (argc != 1)
-	{
-		printf("minishell: Cannot be called with arguments\n");
-		return (EXIT_SUCCESS);
-	}
-	init_global_struct(envp);
-	terminal();
-	return (0);
+	size_t		size;
+	char		buffer[1024];
+
+	size = 1024;
+	getcwd(buffer, size);
+	ft_putstr_fd(buffer, STDOUT_FILENO);
+	ft_putstr_fd("\n", STDOUT_FILENO);
+	return (EXIT_SUCCESS);
 }

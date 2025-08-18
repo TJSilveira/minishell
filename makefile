@@ -13,19 +13,10 @@ OBJS_DIR = ./objs/
 LIBFT_DIR = ./libft/
 
 # Source Files
-SRC_FILES = lexer.c \
-			parser.c \
-			main.c \
-			aux.c \
-			executor.c \
-			terminal.c \
-			builtin.c \
-			env.c \
-			signals.c
+SRC         =   $(shell find src/ -name '*.c')
 
 # Object Files
-OBJS_FILES = $(SRC_FILES:.c=.o)
-OBJS = $(addprefix $(OBJS_DIR),$(OBJS_FILES))
+OBJS        =   $(patsubst src/%.c,objs/%.o,$(SRC))
 
 # Libraries
 LIBFT = $(LIBFT_DIR)libft.a
@@ -46,6 +37,7 @@ $(OBJS_DIR):
 
 # Creating object files
 $(OBJS_DIR)%.o: $(SRC_DIR)%.c
+	@mkdir -p $(@D)
 	${CC} ${CFLAGS} -c ${INCLUDES} $< -o $@
 
 clean:

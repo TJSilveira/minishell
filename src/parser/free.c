@@ -1,26 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   free.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tsilveir <tsilveir@student.42luxembourg.l  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/18 18:15:50 by tsilveir          #+#    #+#             */
-/*   Updated: 2025/08/18 18:15:51 by tsilveir         ###   ########.fr       */
+/*   Created: 2025/08/18 17:59:09 by tsilveir          #+#    #+#             */
+/*   Updated: 2025/08/18 17:59:10 by tsilveir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
+#include "../../includes/minishell.h"
 
-int	main(int argc, char *argv[], char *envp[])
+void	free_ast(t_ast *root)
 {
-	(void)argv;
-	if (argc != 1)
+	if (root)
 	{
-		printf("minishell: Cannot be called with arguments\n");
-		return (EXIT_SUCCESS);
+		free_ast(root->left);
+		free_ast(root->right);
+		free(root->data);
+		free(root);
 	}
-	init_global_struct(envp);
-	terminal();
-	return (0);
+}
+
+void	free_parser_struct(t_parser *par)
+{
+	if (par)
+	{
+		free(par->root);
+		free(par);
+	}
 }

@@ -1,26 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   unset.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: tsilveir <tsilveir@student.42luxembourg.l  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/08/18 18:15:50 by tsilveir          #+#    #+#             */
-/*   Updated: 2025/08/18 18:15:51 by tsilveir         ###   ########.fr       */
+/*   Created: 2025/08/18 16:50:26 by tsilveir          #+#    #+#             */
+/*   Updated: 2025/08/18 16:50:27 by tsilveir         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
+#include "../../includes/minishell.h"
 
-int	main(int argc, char *argv[], char *envp[])
+int	unset_builtin(t_ast *node)
 {
-	(void)argv;
-	if (argc != 1)
-	{
-		printf("minishell: Cannot be called with arguments\n");
+	if (node == NULL)
 		return (EXIT_SUCCESS);
+	while (node)
+	{
+		remove_env(node->data);
+		node = node->left;
 	}
-	init_global_struct(envp);
-	terminal();
-	return (0);
+	return (EXIT_SUCCESS);
 }
