@@ -37,10 +37,8 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 	commands = commands_extractor(cmd_node);
 	builtin_fun(cmd_node, commands, px, TO_EXIT);
 	paths = path_extractor();
-	if (paths == NULL)
-		error_handler("Error: problem envp file path", NULL, 1, NULL);
 	j = 0;
-	while (paths[j])
+	while (paths != NULL && paths[j])
 	{
 		final_path = ft_strjoin_3(paths[j], '/', commands[0]);
 		if (access(final_path, F_OK) == 0)
@@ -49,6 +47,8 @@ void	exec_command(t_px *px, t_ast *cmd_node)
 		j++;
 	}
 	if (ft_strchr(commands[0], '/') && access(commands[0], F_OK) == 0)
+		execve_checker(NULL, commands, paths, px);
+	if (paths == NULL && access(commands[0], F_OK) == 0)
 		execve_checker(NULL, commands, paths, px);
 	file_name = ft_strdup(cmd_node->data);
 	exec_command_free_aux(paths, commands, px);
@@ -88,7 +88,6 @@ int	executor_function(t_ast *root_tree)
 	px = initialize_px(root_tree);
 	if (px->num_commands == 0)
 	{
-		printf("In here\n");
 		exit_code = redirections_setup(px->root_tree, px);
 		restore_fd(px);
 		free_px(px);

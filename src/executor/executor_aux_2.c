@@ -49,7 +49,7 @@ char	**path_extractor(void)
 
 	global = global_struct();
 	i = -1;
-	while (global->ev[++i])
+	while (global->ev != NULL && global->ev[++i])
 	{
 		if (ft_strncmp(global->ev[i], "PATH=", 4) == 0)
 		{

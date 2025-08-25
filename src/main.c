@@ -17,8 +17,9 @@ int	main(int argc, char *argv[], char *envp[])
 	(void)argv;
 	if (argc != 1)
 	{
-		printf("minishell: Cannot be called with arguments\n");
-		return (EXIT_SUCCESS);
+		ft_putstr_fd("minishell: Cannot be called with arguments\n",
+			STDERR_FILENO);
+		return (127);
 	}
 	init_global_struct(envp);
 	terminal();

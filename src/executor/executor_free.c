@@ -17,7 +17,7 @@ void	free_arrays(char **arrays)
 	int	i;
 
 	i = 0;
-	while (arrays[i])
+	while (arrays != NULL && arrays[i])
 	{
 		free(arrays[i]);
 		i++;

@@ -12,10 +12,41 @@
 
 #include "../../includes/minishell.h"
 
+int	cd_builtin_no_env_variables(void)
+{
+	t_global	*global;
+
+	global = global_struct();
+	if (global->ev == NULL)
+	{
+		ft_putstr_fd("cd: HOME not set\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	return (EXIT_SUCCESS);
+}
+
+int	cd_builtin_no_args_aux(char *buffer, char *home)
+{
+	if (chdir(home) == -1)
+	{
+		free(home);
+		ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	else
+	{
+		update_env("OLDPWD=", buffer, NULL);
+		update_env("PWD=", home, home);
+		return (EXIT_SUCCESS);
+	}
+}
+
 int	cd_builtin_no_args(char *buffer)
 {
 	char	*home;
 
+	if (cd_builtin_no_env_variables() == EXIT_FAILURE)
+		return (EXIT_FAILURE);
 	home = find_ev("HOME");
 	if (home[0] == 0)
 	{
@@ -24,20 +55,7 @@ int	cd_builtin_no_args(char *buffer)
 		return (EXIT_FAILURE);
 	}
 	else
-	{
-		if (chdir(home) == -1)
-		{
-			free(home);
-			ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
-			return (EXIT_FAILURE);
-		}
-		else
-		{
-			update_env("OLDPWD=", buffer, NULL);
-			update_env("PWD=", home, home);
-			return (EXIT_SUCCESS);
-		}
-	}
+		return (cd_builtin_no_args_aux(buffer, home));
 }
 
 int	cd_builtin_1_arg(t_ast *initial_node, char *buffer)
