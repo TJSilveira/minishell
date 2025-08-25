@@ -12,9 +12,6 @@
 
 #include "../includes/minishell.h"
 
-/* TODO: 
-==> test all the builtin functions with the env variables unset */
-
 void	terminal(void)
 {
 	t_prompt_line	*pl;
@@ -89,7 +86,7 @@ void	run_parser_and_executor(t_lexer *lexer)
 	t_global	*global;
 
 	global = global_struct();
-	par = init_paser(lexer);
+	par = init_parser(lexer);
 	root_tree = parser_function(par, 0);
 	to_free = to_free_struct();
 	to_free->par = par;

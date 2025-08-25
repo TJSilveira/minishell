@@ -29,15 +29,10 @@ int	count_number_commands(t_ast *root_tree)
 	return (total);
 }
 
-t_px	*initialize_px(t_ast *root_tree)
+void	initialize_px(t_px *px, t_ast *root_tree)
 {
-	t_px	*px;
-
-	px = malloc(sizeof(t_px));
-	malloc_error_handler(px, EXIT_FAILURE);
 	px->num_commands = count_number_commands(root_tree);
 	px->root_tree = root_tree;
 	px->fd_stdin = dup(STDIN_FILENO);
 	px->fd_stdout = dup(STDOUT_FILENO);
-	return (px);
 }

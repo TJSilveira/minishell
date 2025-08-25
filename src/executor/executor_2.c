@@ -20,7 +20,7 @@ int	executor_pipe(t_px *px, t_ast *root)
 
 	status = 0;
 	if (pipe(pipe_fd) != 0)
-		error_handler("Laying down the pipe(s)", NULL, 1, NULL);
+		error_handler("Laying down the pipe(s)", NULL, 1);
 	pids[0] = fork();
 	if (pids[0] == 0)
 		executor_pipe_left(px, root, pipe_fd);
@@ -33,17 +33,15 @@ int	executor_pipe(t_px *px, t_ast *root)
 
 int	execute_subshell(t_px *px, t_ast *root)
 {
-	t_px			*px_subshell;
+	t_px			px_subshell;
 	int				exit_code;
 	t_prompt_line	*pl;
 
 	pl = to_prompt_line_struct();
-	px_subshell = initialize_px(root);
-	px_subshell->fd_stdin = px->fd_stdin;
-	px_subshell->fd_stdout = px->fd_stdout;
-	exit_code = executor_aux(px_subshell, root);
-	free_px(px);
-	free_px(px_subshell);
+	initialize_px(&px_subshell, root);
+	px_subshell.fd_stdin = px->fd_stdin;
+	px_subshell.fd_stdout = px->fd_stdout;
+	exit_code = executor_aux(&px_subshell, root);
 	free(pl->prompt);
 	return (exit_code);
 }
@@ -83,9 +81,9 @@ int	executor(t_px *px, t_ast *cmd_node)
 		if (status == EXIT_FAILURE)
 			exit (EXIT_FAILURE);
 		if (cmd_node->data == NULL || cmd_node->data[0] == 0)
-			error_handler("No command ''", NULL, 1, px);
+			error_handler("No command ''", NULL, 1);
 		if (is_default_token(cmd_node->type))
-			exec_command(px, cmd_node);
+			exec_command(cmd_node);
 	}
 	return (executor_return(&status, pid));
 }
@@ -97,7 +95,7 @@ int	executor_builtin_func(t_px *px)
 
 	exit_code = redirections_setup(px->root_tree, px);
 	if (exit_code == EXIT_SUCCESS)
-		exit_code = builtin_fun(px->root_tree, NULL, px, TO_RETURN);
+		exit_code = builtin_fun(px->root_tree, NULL, TO_RETURN);
 	dup2(px->fd_stdin, STDIN_FILENO);
 	dup2(px->fd_stdout, STDOUT_FILENO);
 	close(px->fd_stdin);

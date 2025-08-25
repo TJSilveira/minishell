@@ -88,7 +88,7 @@ void	ast_token_next(t_parser *par)
 	par->curr_token = par->curr_token->next;
 }
 
-t_parser	*init_paser(t_lexer *lex)
+t_parser	*init_parser(t_lexer *lex)
 {
 	t_parser	*par;
 

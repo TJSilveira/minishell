@@ -30,7 +30,7 @@ int	open_fd(char *path, int option, t_px *px)
 	return (fd);
 }
 
-void	write_line_break(int fd, t_px *px, char *line, char *limitor)
+void	write_line_break(int fd, char *line, char *limitor)
 {
 	size_t			size;
 	t_prompt_line	*pl;
@@ -43,7 +43,6 @@ void	write_line_break(int fd, t_px *px, char *line, char *limitor)
 		free(limitor);
 		close(fd);
 		get_next_line(-1);
-		free_px(px);
 		free_global_struct();
 		free_struct_to_free();
 		free(pl->prompt);
@@ -61,9 +60,9 @@ int	write_line(char *limit, int fd, t_px *px)
 	{
 		write(px->fd_stdout, "> ", 2);
 		line = get_next_line(0);
-		write_line_break(fd, px, line, limitor);
+		write_line_break(fd, line, limitor);
 		if (write(fd, line, ft_strlen(line)) == -1)
-			error_handler("Writing lines", NULL, 1, NULL);
+			error_handler("Writing lines", NULL, 1);
 		free(line);
 	}
 	exit(EXIT_FAILURE);
@@ -75,10 +74,10 @@ int	heredoc(char *limit, t_px *px)
 	int	pid;
 
 	if (pipe(pipe_fd) == -1)
-		error_handler("Laying down the pipe(s)", NULL, 1, NULL);
+		error_handler("Laying down the pipe(s)", NULL, 1);
 	pid = fork();
 	if (pid == -1)
-		error_handler("Fork creation", NULL, 1, NULL);
+		error_handler("Fork creation", NULL, 1);
 	if (pid == 0)
 	{
 		close(pipe_fd[READ]);

@@ -49,10 +49,8 @@ void	error_handler_enoent(char *file_name)
 	exit(127);
 }
 
-void	error_handler(char *msg, char *f_name, int err_code, t_px *px)
+void	error_handler(char *msg, char *f_name, int err_code)
 {
-	if (px)
-		free_px(px);
 	ft_putstr_fd("minishell: ", STDERR_FILENO);
 	if (f_name)
 	{
@@ -77,5 +75,5 @@ void	error_handler(char *msg, char *f_name, int err_code, t_px *px)
 void	malloc_error_handler(void *ptr, int error_code)
 {
 	if (!ptr)
-		error_handler("Error with malloc", NULL, error_code, NULL);
+		error_handler("Error with malloc", NULL, error_code);
 }

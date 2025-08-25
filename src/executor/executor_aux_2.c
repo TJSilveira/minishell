@@ -68,7 +68,7 @@ char	*ft_strjoin_3(const char *s1, char connector, const char *s2)
 
 	res = malloc((ft_strlen(s1) + 2 + ft_strlen(s2)) * sizeof(char));
 	if (!res)
-		error_handler("Malloc problem in ft_strjoin_3", NULL, 1, NULL);
+		error_handler("Malloc problem in ft_strjoin_3", NULL, 1);
 	i = 0;
 	while (s1[i])
 	{

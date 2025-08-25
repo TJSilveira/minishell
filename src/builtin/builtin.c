@@ -12,7 +12,7 @@
 
 #include "../../includes/minishell.h"
 
-int	builtin_fun(t_ast *node, char **comms, t_px *px, int to_exit)
+int	builtin_fun(t_ast *node, char **comms, int to_exit)
 {
 	int				exit_code;
 	t_prompt_line	*pl;
@@ -24,7 +24,6 @@ int	builtin_fun(t_ast *node, char **comms, t_px *px, int to_exit)
 	else if (to_exit == TO_EXIT)
 	{
 		free_arrays(comms);
-		free_px(px);
 		free_struct_to_free();
 		free_global_struct();
 		rl_clear_history();
