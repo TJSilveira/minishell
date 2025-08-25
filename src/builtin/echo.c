@@ -40,6 +40,20 @@ void	echo_builtin_aux(t_ast *node, int option)
 		ft_putstr_fd("\n", STDOUT_FILENO);
 }
 
+int	onl_n(t_ast *node)
+{
+	int	i;
+
+	i = 2;
+	while (node->data[i])
+	{
+		if (node->data[i] != 'n')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
 int	echo_builtin(t_ast *node)
 {
 	int		option;
@@ -50,7 +64,7 @@ int	echo_builtin(t_ast *node)
 		ft_putstr_fd("\n", STDOUT_FILENO);
 		return (EXIT_SUCCESS);
 	}
-	if (ft_strncmp(node->data, "-n", 2) == 0 && ft_strlen(node->data) == 2)
+	while (node != NULL && ft_strncmp(node->data, "-n", 2) == 0 && onl_n(node))
 	{
 		node = node->left;
 		option = 1;

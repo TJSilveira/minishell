@@ -78,6 +78,44 @@ void	terminal_input_option(void)
 	}
 }
 
+void	ast_to_sexpr(t_ast *node)
+{
+	if (!node)
+		return;
+
+	if (!node->left && !node->right)
+	{
+		if (node->data)
+			printf("%s", node->data);
+		return;
+	}
+	printf("(");
+	if (node->data)
+		printf("%s", node->data);
+	if (node->left)
+	{
+		printf(" ");
+		ast_to_sexpr(node->left);
+	}
+	if (node->right)
+	{
+		printf(" ");
+		ast_to_sexpr(node->right);
+	}
+	printf(")");
+}
+
+void	print_ast_sexpr(t_ast *root)
+{
+	if (!root)
+	{
+		printf("()\n");
+		return;
+	}
+	ast_to_sexpr(root);
+	printf("\n");
+}
+
 void	run_parser_and_executor(t_lexer *lexer)
 {
 	t_parser	*par;
@@ -88,6 +126,7 @@ void	run_parser_and_executor(t_lexer *lexer)
 	global = global_struct();
 	par = init_parser(lexer);
 	root_tree = parser_function(par, 0);
+	// print_ast_sexpr(root_tree);
 	to_free = to_free_struct();
 	to_free->par = par;
 	to_free->root_tree = root_tree;

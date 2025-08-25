@@ -79,11 +79,12 @@ int	exit_builtin(t_ast *node)
 	{
 		free(pl->prompt);
 		rl_clear_history();
-		printf("exit\n");
+		ft_putstr_fd("exit\n", STDOUT_FILENO);
 	}
 	if (node == NULL)
 	{
 		free_global_struct();
+		free_struct_to_free();
 		exit(EXIT_SUCCESS);
 	}
 	exit_code = 0;

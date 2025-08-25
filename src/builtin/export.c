@@ -22,7 +22,11 @@ void	print_export_builtin(void)
 	if (global->ev == NULL)
 		return ;
 	while (global->ev[++i])
-		printf("declare -x %s\n", global->ev[i]);
+	{
+		ft_putstr_fd("declare -x ", STDOUT_FILENO);
+		ft_putstr_fd(global->ev[i], STDOUT_FILENO);
+		ft_putstr_fd("\n", STDOUT_FILENO);
+	}
 }
 
 int	check_valid_export_aux(char *str)

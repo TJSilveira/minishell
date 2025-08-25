@@ -24,7 +24,10 @@ void	print_env_builtin(void)
 	while (global->ev[i])
 	{
 		if (ft_strnstr(global->ev[i], "=", ft_strlen(global->ev[i])) != NULL)
-			printf("%s\n", global->ev[i]);
+		{
+			ft_putstr_fd(global->ev[i],STDOUT_FILENO);
+			ft_putstr_fd("\n", STDOUT_FILENO);
+		}
 		i++;
 	}
 }

@@ -12,7 +12,24 @@
 
 #include "../../includes/minishell.h"
 
-/* Start Parsing Functions*/
+int	ast_operator_check(t_ast *root_node)
+{
+	if (is_operator_token(root_node->type) && (root_node->left == NULL || root_node->right == NULL))
+	{
+		ft_putstr_fd("Error: syntax error near unexpecter token `", STDERR_FILENO);
+		ft_putstr_fd(root_node->data, STDERR_FILENO);
+		ft_putstr_fd("'\n", STDERR_FILENO);
+		return (EXIT_FAILURE);
+	}
+	if (is_operator_token(root_node->type))
+	{
+		if (is_operator_token(root_node->left->type))
+			ast_operator_check(root_node->left);
+		if (is_operator_token(root_node->right->type))
+			ast_operator_check(root_node->right);
+	}
+	return (EXIT_SUCCESS);
+}
 
 t_ast	*parser_function(t_parser *par, int min_bp)
 {
@@ -23,10 +40,20 @@ t_ast	*parser_function(t_parser *par, int min_bp)
 		return (NULL);
 	l_node = NULL;
 	r_node = NULL;
+	// printf("This is inside parser_functions [%c]\n", par->curr_token->type);
+	if (is_operator_token(par->curr_token->type))
+	{
+		ft_putstr_fd("Error: syntax error near unexpecter token `", STDERR_FILENO);
+		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
+		ft_putstr_fd("'\n", STDERR_FILENO);		
+		return (NULL);
+	}
 	l_node = parse_simple_command(par);
 	if (l_node == NULL)
 		return (NULL);
 	if (parser_f_loop(par, min_bp, &l_node, &r_node) == EXIT_FAILURE)
+		return (NULL);
+	if (ast_operator_check(l_node) == EXIT_FAILURE)
 		return (NULL);
 	return (l_node);
 }

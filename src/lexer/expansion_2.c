@@ -79,7 +79,8 @@ void	token_expansion_aux_ifs_while(t_token *t, int *i, int *j)
 {
 	while (t->data[*i + 1 + *j] != 0 && t->data[*i + 1 + *j] != ' '
 		&& t->data[*i + 1 + *j] != '\"' && t->data[*i + 1 + *j] != '\''
-		&& t->data[*i + 1 + *j] != '\\')
+		&& t->data[*i + 1 + *j] != '\\' && t->data[*i + 1 + *j] != ']'
+		&& t->data[*i + 1 + *j] != '%' && t->data[*i + 1 + *j] != '$')
 		(*j)++;
 }
 
