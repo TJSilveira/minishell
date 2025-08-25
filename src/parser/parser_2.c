@@ -17,13 +17,13 @@ int	parse_simple_command_red_token(t_parser *par, t_command *c)
 	c->token_redirect = par->curr_token;
 	if (par->curr_token->next == NULL)
 	{
-		ft_putstr_fd("Error: syntax error near unexpecter token `newline'\n", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `newline'\n", STDERR_FILENO);
 		return(EXIT_FAILURE);
 	}
 	par->curr_token = par->curr_token->next;
 	if (!is_default_token(par->curr_token->type))
 	{
-		ft_putstr_fd("Error: syntax error near unexpecter token `", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `", STDERR_FILENO);
 		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
 		return (EXIT_FAILURE);

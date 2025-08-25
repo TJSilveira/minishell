@@ -35,6 +35,27 @@ int	check_matching_parenthesis_aux(t_lexer *lexer, int *counter)
 	return (EXIT_SUCCESS);
 }
 
+int	check_only_parenthesis(t_lexer *lexer)
+{
+	t_token	*temp;
+	int		counter;
+
+	counter = 0;
+	temp = lexer->first_token;
+	while (temp)
+	{
+		if(temp->type == CHAR_OPAREN || temp->type == CHAR_CPAREN)
+			counter++;
+		temp = temp->next;
+	}
+	if (counter == lexer->count_token && (counter < 3 || counter > 4))
+	{
+		ft_putstr_fd("syntax error near unexpected token `)'\n", STDERR_FILENO);
+		return (2);
+	}
+	return (EXIT_SUCCESS);
+}
+
 int	check_matching_parenthesis(t_lexer *lexer)
 {
 	int		counter;
@@ -47,7 +68,7 @@ int	check_matching_parenthesis(t_lexer *lexer)
 		ft_putstr_fd("Error: Invalid Parenthesis\n", STDERR_FILENO);
 		return (EXIT_FAILURE);
 	}
-	return (EXIT_SUCCESS);
+	return (check_only_parenthesis(lexer));
 }
 
 int	check_only_terminal(char *input)

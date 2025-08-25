@@ -16,7 +16,7 @@ int	ast_operator_check(t_ast *root_node)
 {
 	if (is_operator_token(root_node->type) && (root_node->left == NULL || root_node->right == NULL))
 	{
-		ft_putstr_fd("Error: syntax error near unexpecter token `", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `", STDERR_FILENO);
 		ft_putstr_fd(root_node->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
 		return (EXIT_FAILURE);
@@ -43,7 +43,7 @@ t_ast	*parser_function(t_parser *par, int min_bp)
 	// printf("This is inside parser_functions [%c]\n", par->curr_token->type);
 	if (is_operator_token(par->curr_token->type))
 	{
-		ft_putstr_fd("Error: syntax error near unexpecter token `", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `", STDERR_FILENO);
 		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);		
 		return (NULL);

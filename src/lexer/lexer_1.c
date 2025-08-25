@@ -31,9 +31,7 @@ int	lexer_function(char *input, t_lexer *lexer)
 	clean_last_tokens(&aux, lexer);
 	token_expansion(&aux, lexer);
 	remove_empty_tokens(lexer);
-	if (check_matching_parenthesis(lexer) == EXIT_FAILURE)
-		return (EXIT_FAILURE);
-	return (EXIT_SUCCESS);
+	return (check_matching_parenthesis(lexer));
 }
 
 void	handle_def_1char(char *i, t_token_aux *aux, t_lexer *l, int *f)

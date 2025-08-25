@@ -36,14 +36,19 @@ void	terminal(void)
 int	run_command(char *line)
 {
 	t_lexer		*lexer;
+	t_global	*global;
+	int			exit_code;
 
 	lexer = init_lexer();
+	global = global_struct();
 	if (!lexer)
 		return (EXIT_FAILURE);
-	if (lexer_function(line, lexer) == EXIT_FAILURE)
+	exit_code = lexer_function(line, lexer);
+	if (exit_code != EXIT_SUCCESS)
 	{
+		global->exit_code = exit_code;
 		free_lexer(lexer);
-		return (EXIT_FAILURE);
+		return (exit_code);
 	}
 	free(line);
 	if (lexer->first_token == NULL && lexer->count_token == 0)
