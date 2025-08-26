@@ -48,7 +48,8 @@ int	check_only_parenthesis(t_lexer *lexer)
 			counter++;
 		temp = temp->next;
 	}
-	if (counter == lexer->count_token && (counter < 3 || counter > 4))
+	if (counter == lexer->count_token && counter > 0
+		&& (counter < 3 || counter > 4))
 	{
 		ft_putstr_fd("syntax error near unexpected token `)'\n", STDERR_FILENO);
 		return (2);

@@ -12,21 +12,41 @@
 
 #include "../../includes/minishell.h"
 
+void	print_export_builtin_aux(char **env_array)
+{
+	int		i;
+
+	i = -1;
+	while (env_array[++i])
+	{
+		ft_putstr_fd("declare -x ", STDOUT_FILENO);
+		print_with_dquotes(env_array[i]);
+		ft_putstr_fd("\n", STDOUT_FILENO);
+	}
+	free(env_array);
+}
+
 void	print_export_builtin(void)
 {
 	t_global	*global;
+	char		**env_array;
+	int			total_ev;
 	int			i;
 
 	global = global_struct();
-	i = -1;
 	if (global->ev == NULL)
 		return ;
+	i = -1;
+	total_ev = 0;
 	while (global->ev[++i])
-	{
-		ft_putstr_fd("declare -x ", STDOUT_FILENO);
-		ft_putstr_fd(global->ev[i], STDOUT_FILENO);
-		ft_putstr_fd("\n", STDOUT_FILENO);
-	}
+		total_ev++;
+	env_array = (char **) malloc(sizeof(char *) * (total_ev + 1));
+	i = -1;
+	while (global->ev[++i])
+		env_array[i] = global->ev[i];
+	env_array[i] = NULL;
+	quicksort_strings(env_array, 0, total_ev - 1);
+	print_export_builtin_aux(env_array);
 }
 
 int	check_valid_export_aux(char *str)

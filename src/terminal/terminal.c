@@ -93,7 +93,6 @@ void	run_parser_and_executor(t_lexer *lexer)
 	global = global_struct();
 	par = init_parser(lexer);
 	root_tree = parser_function(par, 0);
-	// print_ast_sexpr(root_tree);
 	to_free = to_free_struct();
 	to_free->par = par;
 	to_free->root_tree = root_tree;

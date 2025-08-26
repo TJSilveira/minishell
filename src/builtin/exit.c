@@ -52,11 +52,14 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 	}
 }
 
-int	exit_arg_count(t_ast *node)
+int	exit_arg_count(t_ast *node, int *exit_code)
 {
 	int				count;
 
 	count = 0;
+	if (node != NULL && ft_a_to_exitcode(node->data, exit_code)
+		== EXIT_FAILURE)
+		return (0);
 	while (node)
 	{
 		count++;
@@ -76,7 +79,8 @@ int	exit_builtin(t_ast *node)
 	int				exit_code;
 
 	pl = to_prompt_line_struct();
-	if (exit_arg_count(node) > 1)
+	exit_code = 0;
+	if (exit_arg_count(node, &exit_code) > 1)
 		return (EXIT_FAILURE);
 	if (node == NULL && pl->input_type == NONINTERACTIVE_MODE)
 		exit(EXIT_SUCCESS);
@@ -92,7 +96,6 @@ int	exit_builtin(t_ast *node)
 		free_struct_to_free();
 		exit(EXIT_SUCCESS);
 	}
-	exit_code = 0;
 	exit_builtin_aux(node, &exit_code);
 	free_global_struct();
 	free_struct_to_free();

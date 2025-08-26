@@ -42,7 +42,6 @@ t_ast	*parser_function(t_parser *par, int min_bp)
 		return (NULL);
 	l_node = NULL;
 	r_node = NULL;
-	// printf("This is inside parser_functions [%c]\n", par->curr_token->type);
 	if (is_operator_token(par->curr_token->type))
 	{
 		ft_putstr_fd("Error: syntax error near unexpected token `",
