@@ -14,9 +14,11 @@
 
 int	ast_operator_check(t_ast *root_node)
 {
-	if (is_operator_token(root_node->type) && (root_node->left == NULL || root_node->right == NULL))
+	if (is_operator_token(root_node->type)
+		&& (root_node->left == NULL || root_node->right == NULL))
 	{
-		ft_putstr_fd("Error: syntax error near unexpected token `", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `",
+			STDERR_FILENO);
 		ft_putstr_fd(root_node->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
 		return (EXIT_FAILURE);
@@ -43,9 +45,10 @@ t_ast	*parser_function(t_parser *par, int min_bp)
 	// printf("This is inside parser_functions [%c]\n", par->curr_token->type);
 	if (is_operator_token(par->curr_token->type))
 	{
-		ft_putstr_fd("Error: syntax error near unexpected token `", STDERR_FILENO);
+		ft_putstr_fd("Error: syntax error near unexpected token `",
+			STDERR_FILENO);
 		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
-		ft_putstr_fd("'\n", STDERR_FILENO);		
+		ft_putstr_fd("'\n", STDERR_FILENO);
 		return (NULL);
 	}
 	l_node = parse_simple_command(par);
@@ -113,17 +116,4 @@ int	parser_f_loop(t_parser *p, int min_bp, t_ast **ln, t_ast **rn)
 void	ast_token_next(t_parser *par)
 {
 	par->curr_token = par->curr_token->next;
-}
-
-t_parser	*init_parser(t_lexer *lex)
-{
-	t_parser	*par;
-
-	par = malloc(sizeof(t_parser));
-	par->root = malloc(sizeof(t_ast *));
-	if (par == NULL || par->root == NULL)
-		return (NULL);
-	par->initial_token = lex->first_token;
-	par->curr_token = lex->first_token;
-	return (par);
 }

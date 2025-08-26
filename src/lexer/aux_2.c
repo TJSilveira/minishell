@@ -44,7 +44,7 @@ int	check_only_parenthesis(t_lexer *lexer)
 	temp = lexer->first_token;
 	while (temp)
 	{
-		if(temp->type == CHAR_OPAREN || temp->type == CHAR_CPAREN)
+		if (temp->type == CHAR_OPAREN || temp->type == CHAR_CPAREN)
 			counter++;
 		temp = temp->next;
 	}

@@ -83,44 +83,6 @@ void	terminal_input_option(void)
 	}
 }
 
-void	ast_to_sexpr(t_ast *node)
-{
-	if (!node)
-		return;
-
-	if (!node->left && !node->right)
-	{
-		if (node->data)
-			printf("%s", node->data);
-		return;
-	}
-	printf("(");
-	if (node->data)
-		printf("%s", node->data);
-	if (node->left)
-	{
-		printf(" ");
-		ast_to_sexpr(node->left);
-	}
-	if (node->right)
-	{
-		printf(" ");
-		ast_to_sexpr(node->right);
-	}
-	printf(")");
-}
-
-void	print_ast_sexpr(t_ast *root)
-{
-	if (!root)
-	{
-		printf("()\n");
-		return;
-	}
-	ast_to_sexpr(root);
-	printf("\n");
-}
-
 void	run_parser_and_executor(t_lexer *lexer)
 {
 	t_parser	*par;

@@ -43,3 +43,16 @@ int	par_tree_agg(t_parser *par, t_bp *bp, t_ast **l_n, t_ast **r_n)
 	*l_n = create_ast_structure(op, *l_n, *r_n);
 	return (EXIT_SUCCESS);
 }
+
+t_parser	*init_parser(t_lexer *lex)
+{
+	t_parser	*par;
+
+	par = malloc(sizeof(t_parser));
+	par->root = malloc(sizeof(t_ast *));
+	if (par == NULL || par->root == NULL)
+		return (NULL);
+	par->initial_token = lex->first_token;
+	par->curr_token = lex->first_token;
+	return (par);
+}

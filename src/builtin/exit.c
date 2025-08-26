@@ -41,9 +41,6 @@ int	ft_a_to_exitcode(const char *nptr, int *total)
 
 void	exit_builtin_aux(t_ast *node, int *exit_code)
 {
-	int				count;
-
-	count = 0;
 	if (ft_a_to_exitcode(node->data, exit_code))
 	{
 		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
@@ -53,6 +50,13 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 		free_struct_to_free();
 		exit(2);
 	}
+}
+
+int	exit_arg_count(t_ast *node)
+{
+	int				count;
+
+	count = 0;
 	while (node)
 	{
 		count++;
@@ -60,11 +64,10 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 	}
 	if (count > 1)
 	{
-		ft_putstr_fd("minishell: exit: too many arguments\n", STDERR_FILENO);
-		free_global_struct();
-		free_struct_to_free();
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("exit\nminishell: exit: too many arguments\n",
+			STDERR_FILENO);
 	}
+	return (count);
 }
 
 int	exit_builtin(t_ast *node)
@@ -73,6 +76,8 @@ int	exit_builtin(t_ast *node)
 	int				exit_code;
 
 	pl = to_prompt_line_struct();
+	if (exit_arg_count(node) > 1)
+		return (EXIT_FAILURE);
 	if (node == NULL && pl->input_type == NONINTERACTIVE_MODE)
 		exit(EXIT_SUCCESS);
 	if (pl->input_type == INTERACTIVE_MODE)

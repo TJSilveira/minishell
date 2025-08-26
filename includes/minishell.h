@@ -212,6 +212,8 @@ void			free_global_struct(void);
 t_lexer			*init_lexer(void);
 void			free_lexer(t_lexer *lexer);
 t_prompt_line	*to_prompt_line_struct(void);
+void			ast_to_sexpr(t_ast *node);
+void			print_ast_sexpr(t_ast *root);
 
 /* executor.c */
 int				open_fd(char *path, int option, t_px *px);
