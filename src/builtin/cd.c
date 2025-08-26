@@ -27,6 +27,9 @@ int	cd_builtin_no_env_variables(void)
 
 int	cd_builtin_no_args_aux(char *buffer, char *home)
 {
+	char	*temp_oldpwd;
+	char	*temp_pwd;
+
 	if (chdir(home) == -1)
 	{
 		free(home);
@@ -35,8 +38,11 @@ int	cd_builtin_no_args_aux(char *buffer, char *home)
 	}
 	else
 	{
-		update_env("OLDPWD=", buffer, NULL);
-		update_env("PWD=", home, home);
+		temp_oldpwd = ft_strjoin("=", buffer);
+		temp_pwd = ft_strjoin("=", home);
+		free(home);
+		update_env("OLDPWD", temp_oldpwd, temp_oldpwd);
+		update_env("PWD", temp_pwd, temp_pwd);
 		return (EXIT_SUCCESS);
 	}
 }
@@ -60,6 +66,10 @@ int	cd_builtin_no_args(char *buffer)
 
 int	cd_builtin_1_arg(t_ast *initial_node, char *buffer)
 {
+	char	*temp_oldpwd;
+	char	*temp_pwd;
+	char	pwd[1024];
+
 	if (chdir(initial_node->data) == -1)
 	{
 		ft_putstr_fd("cd: No such file or directory\n", STDERR_FILENO);
@@ -67,8 +77,11 @@ int	cd_builtin_1_arg(t_ast *initial_node, char *buffer)
 	}
 	else
 	{
-		update_env("OLDPWD=", buffer, NULL);
-		update_env("PWD=", initial_node->data, NULL);
+		getcwd(pwd, 1024);
+		temp_oldpwd = ft_strjoin("=", buffer);
+		temp_pwd = ft_strjoin("=", pwd);
+		update_env("OLDPWD", temp_oldpwd, temp_oldpwd);
+		update_env("PWD", temp_pwd, temp_pwd);
 		return (EXIT_SUCCESS);
 	}
 }
