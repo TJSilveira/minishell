@@ -22,6 +22,7 @@ void	add_env_aux(char *to_add, t_global *global)
 	while (global->ev[count])
 		count++;
 	new_env = malloc(sizeof(char *) * (count + 2));
+	malloc_error_handler(new_env, 2);
 	i = -1;
 	while (++i < count)
 		new_env[i] = global->ev[i];
@@ -39,6 +40,7 @@ void	add_env(char *to_add)
 	if (global->ev == NULL)
 	{
 		global->ev = malloc(sizeof(char *) * (2));
+		malloc_error_handler(global->ev, 2);
 		global->ev[0] = ft_strdup(to_add);
 		global->ev[1] = NULL;
 		return ;

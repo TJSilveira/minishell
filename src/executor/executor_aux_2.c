@@ -12,16 +12,15 @@
 
 #include "../../includes/minishell.h"
 
-char	**commands_extractor(t_ast *cmd_node)
+char	**commands_extractor(t_ast *c_node)
 {
 	t_ast	*temp;
 	int		count;
 	char	**commands;
 
-	if (cmd_node == NULL || cmd_node->data == NULL
-		|| cmd_node->type != CHAR_DEF)
+	if (c_node == NULL || c_node->data == NULL || c_node->type != CHAR_DEF)
 		return (NULL);
-	temp = cmd_node;
+	temp = c_node;
 	count = 0;
 	while (temp)
 	{
@@ -29,7 +28,8 @@ char	**commands_extractor(t_ast *cmd_node)
 		temp = temp->left;
 	}
 	commands = malloc(sizeof(char *) * (count + 1));
-	temp = cmd_node;
+	malloc_error_handler(commands, 2);
+	temp = c_node;
 	count = 0;
 	while (temp)
 	{
@@ -67,8 +67,7 @@ char	*ft_strjoin_3(const char *s1, char connector, const char *s2)
 	char	*res;
 
 	res = malloc((ft_strlen(s1) + 2 + ft_strlen(s2)) * sizeof(char));
-	if (!res)
-		error_handler("Malloc problem in ft_strjoin_3", NULL, 1);
+	malloc_error_handler(res, 2);
 	i = 0;
 	while (s1[i])
 	{

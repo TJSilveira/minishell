@@ -28,6 +28,8 @@ void	token_expansion_aux(t_token *token)
 		if (token_quote_rmv(token, &i, &status, CHAR_DQUOTE))
 			continue ;
 		token_exp_aux_ifs(token, &status, global, &i);
+		if (token->data[i] == 0)
+			break ;
 		i++;
 	}
 }

@@ -67,6 +67,7 @@ void	remove_env_aux_2(int count, int *i, t_global *global)
 	int			j;
 
 	new_env = malloc(sizeof(char *) * (*i));
+	malloc_error_handler(new_env, 2);
 	(*i) = -1;
 	j = 0;
 	while (global->ev[++(*i)])
@@ -87,7 +88,7 @@ void	remove_env_aux(int count)
 	int			i;
 
 	global = global_struct();
-	i = -1;
+	i = 0;
 	while (global->ev[i])
 		i++;
 	if (i == 1)
@@ -105,14 +106,21 @@ void	remove_env(char *ev_rmv)
 	t_global	*global;
 	int			count;
 
-	count = -1;
+	count = 0;
 	global = global_struct();
 	if (global->ev == NULL)
 		return ;
-	while (global->ev[++count])
+	while (global->ev[count])
 	{
-		if (ft_strncmp(ev_rmv, global->ev[count], ft_strlen(ev_rmv)) == 0)
+		if (ft_strncmp(ev_rmv, global->ev[count], ft_strlen(ev_rmv)) == 0
+			&& ft_strlen(ev_rmv) == ft_strlen(global->ev[count]))
 			break ;
+		if (ft_strncmp(ev_rmv, global->ev[count], ft_strlen(ev_rmv)) == 0
+			&& ft_strchr(global->ev[count], '=') != NULL
+			&& ft_strlen(ev_rmv) == ft_strlen(global->ev[count])
+			- ft_strlen(ft_strchr(global->ev[count], '=')))
+			break ;
+		count++;
 	}
 	if (global->ev[count])
 		remove_env_aux(count);

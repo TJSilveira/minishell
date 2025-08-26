@@ -65,6 +65,7 @@ void	print_with_dquotes(char *str)
 	else
 	{
 		temp = (char *)malloc(sizeof(char) * (ft_strlen(str) + 3));
+		malloc_error_handler(temp, 2);
 		i = -1;
 		while (str[++i] != '=')
 			temp[i] = str[i];

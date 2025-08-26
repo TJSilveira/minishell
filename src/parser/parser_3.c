@@ -49,7 +49,9 @@ t_parser	*init_parser(t_lexer *lex)
 	t_parser	*par;
 
 	par = malloc(sizeof(t_parser));
+	malloc_error_handler(par, 2);
 	par->root = malloc(sizeof(t_ast *));
+	malloc_error_handler(par->root, 2);
 	if (par == NULL || par->root == NULL)
 		return (NULL);
 	par->initial_token = lex->first_token;

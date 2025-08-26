@@ -17,8 +17,7 @@ t_ast	*create_ast_node(int type, char *content)
 	t_ast	*node;
 
 	node = malloc(sizeof(t_ast));
-	if (!node)
-		return (NULL);
+	malloc_error_handler(node, 2);
 	node->data = ft_strdup(content);
 	node->type = type;
 	node->left = NULL;

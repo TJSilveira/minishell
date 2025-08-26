@@ -26,6 +26,7 @@ void	init_lexer_aux(char *input, t_token_aux *aux, t_lexer *lexer)
 t_token	*init_token(t_token *token, int len_input)
 {
 	token = malloc(sizeof(t_token));
+	malloc_error_handler(token, 2);
 	token->data = ft_calloc(len_input + 1, sizeof(char));
 	token->next = NULL;
 	token->type = 0;

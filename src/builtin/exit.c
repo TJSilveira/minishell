@@ -39,6 +39,13 @@ int	ft_a_to_exitcode(const char *nptr, int *total)
 	return (EXIT_SUCCESS);
 }
 
+void	exit_free_aux(int exit_code)
+{
+	free_global_struct();
+	free_struct_to_free();
+	exit(exit_code);
+}
+
 void	exit_builtin_aux(t_ast *node, int *exit_code)
 {
 	if (ft_a_to_exitcode(node->data, exit_code))
@@ -46,9 +53,7 @@ void	exit_builtin_aux(t_ast *node, int *exit_code)
 		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
 		ft_putstr_fd(node->data, STDERR_FILENO);
 		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
-		free_global_struct();
-		free_struct_to_free();
-		exit(2);
+		exit_free_aux(2);
 	}
 }
 
@@ -91,11 +96,8 @@ int	exit_builtin(t_ast *node)
 		ft_putstr_fd("exit\n", STDOUT_FILENO);
 	}
 	if (node == NULL)
-	{
-		free_global_struct();
-		free_struct_to_free();
-		exit(EXIT_SUCCESS);
-	}
+		exit_free_aux(EXIT_SUCCESS);
+	exit_code = 0;
 	exit_builtin_aux(node, &exit_code);
 	free_global_struct();
 	free_struct_to_free();

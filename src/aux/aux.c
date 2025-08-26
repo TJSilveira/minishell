@@ -27,6 +27,7 @@ void	init_ev(char *envp[])
 	while (envp[count])
 		count++;
 	global->ev = malloc(sizeof(char *) * (count + 1));
+	malloc_error_handler(global->ev, 2);
 	count = -1;
 	while (envp[++count])
 		global->ev[count] = ft_strdup(envp[count]);

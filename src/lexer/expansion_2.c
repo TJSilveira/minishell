@@ -48,6 +48,7 @@ void	insert_expansion(t_token *t, int sta, int len, char *mid_str)
 	e.len_final += ft_strlen(mid_str);
 	e.len_final += ft_strlen(e.end_str);
 	e.final_str = malloc(sizeof(char) * (e.len_final + 1));
+	malloc_error_handler(e.final_str, 2);
 	insert_expansion_aux(t, &e, mid_str);
 }
 

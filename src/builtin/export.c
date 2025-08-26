@@ -41,6 +41,7 @@ void	print_export_builtin(void)
 	while (global->ev[++i])
 		total_ev++;
 	env_array = (char **) malloc(sizeof(char *) * (total_ev + 1));
+	malloc_error_handler(env_array, 2);
 	i = -1;
 	while (global->ev[++i])
 		env_array[i] = global->ev[i];

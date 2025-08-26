@@ -37,11 +37,13 @@ int	check_matching_parenthesis_aux(t_lexer *lexer, int *counter)
 
 int	check_only_parenthesis(t_lexer *lexer)
 {
-	t_token	*temp;
-	int		counter;
+	t_token			*temp;
+	int				counter;
+	t_prompt_line	*pl;
 
 	counter = 0;
 	temp = lexer->first_token;
+	pl = to_prompt_line_struct();
 	while (temp)
 	{
 		if (temp->type == CHAR_OPAREN || temp->type == CHAR_CPAREN)
@@ -49,7 +51,7 @@ int	check_only_parenthesis(t_lexer *lexer)
 		temp = temp->next;
 	}
 	if (counter == lexer->count_token && counter > 0
-		&& (counter < 3 || counter > 4))
+		&& !(counter == 4 && ft_strlen(pl->line) == 4))
 	{
 		ft_putstr_fd("syntax error near unexpected token `)'\n", STDERR_FILENO);
 		return (2);
