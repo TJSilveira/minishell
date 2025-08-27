@@ -100,6 +100,8 @@ void	lexer_struct_token_org_update(t_lexer *lexer)
 		if (ft_strchr(curr->data, '\"') != NULL
 			|| ft_strchr(curr->data, '\'') != NULL)
 			curr->type_org = CHAR_DQUOTE;
+		else
+			curr->type_org = curr->type;
 		curr = curr->next;
 	}
 }

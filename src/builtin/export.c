@@ -67,30 +67,28 @@ int	check_valid_export_aux(char *str)
 
 int	check_valid_export(char *str)
 {
-	char	*es_pos;
 	char	*env_to_change;
+	int		use_sub;
 
+	use_sub = 0;
 	if (str[0] == '=')
 	{
-		ft_putstr_fd("minishell: export: `", STDERR_FILENO);
-		ft_putstr_fd("=", STDERR_FILENO);
-		ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
+		ft_putstr_fd("minishell: export: `=': not a valid identifier\n",
+			STDERR_FILENO);
 		return (EXIT_FAILURE);
 	}
-	es_pos = ft_strchr(str, '=');
-	if (es_pos != NULL)
-		env_to_change = ft_substr(str, 0, es_pos - str);
-	else
-		env_to_change = str;
+	env_to_change = update_env_to_change(&use_sub, str);
 	if (check_valid_export_aux(env_to_change) == EXIT_FAILURE)
 	{
 		ft_putstr_fd("minishell: export: `", STDERR_FILENO);
 		ft_putstr_fd(env_to_change, STDERR_FILENO);
 		ft_putstr_fd("': not a valid identifier\n", STDERR_FILENO);
-		if (es_pos != NULL)
+		if (use_sub)
 			free(env_to_change);
 		return (EXIT_FAILURE);
 	}
+	if (use_sub)
+		free(env_to_change);
 	return (EXIT_SUCCESS);
 }
 

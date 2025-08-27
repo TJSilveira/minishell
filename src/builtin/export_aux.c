@@ -83,3 +83,17 @@ void	print_with_dquotes(char *str)
 		free(temp);
 	}
 }
+
+char	*update_env_to_change(int *us, char *str)
+{
+	char	*es_pos;
+
+	es_pos = ft_strchr(str, '=');
+	if (es_pos != NULL)
+	{
+		*us = 1;
+		return (ft_substr(str, 0, es_pos - str));
+	}
+	else
+		return (str);
+}

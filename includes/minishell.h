@@ -275,6 +275,7 @@ void			remove_env(char *ev_rmv);
 void			remove_env_aux(int count);
 int				unset_builtin(t_ast *node);
 int				env_builtin(t_ast *node);
+char			*update_env_to_change(int *us, char *str);
 
 /* env.c */
 void			add_env(char *to_add);
