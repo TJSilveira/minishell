@@ -1,6 +1,6 @@
 NAME = libft.a
 AR = ar -rcs
-CC = gcc
+CC = cc
 
 # Directories
 SRC_DIR = #./src/
