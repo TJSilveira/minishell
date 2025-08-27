@@ -35,6 +35,8 @@ void	write_line_break(int fd, char *line, char *limitor)
 	size_t			size;
 	t_prompt_line	*pl;
 
+	if (line == NULL)
+		return ;
 	pl = to_prompt_line_struct();
 	size = ft_strlen(limitor);
 	if (size == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0)
@@ -42,7 +44,7 @@ void	write_line_break(int fd, char *line, char *limitor)
 		free(line);
 		free(limitor);
 		close(fd);
-		get_next_line(-1);
+		get_next_line(0, TO_CLEAN);
 		free_global_struct();
 		free_struct_to_free();
 		free(pl->prompt);
@@ -59,7 +61,14 @@ int	write_line(char *limit, int fd, t_px *px)
 	while (1)
 	{
 		write(px->fd_stdout, "> ", 2);
-		line = get_next_line(0);
+		line = get_next_line(0, TO_USE);
+		if (line == NULL)
+		{
+			free(limitor);
+			close(fd);
+			get_next_line(0, TO_CLEAN);
+			exit(EXIT_SUCCESS);
+		}
 		write_line_break(fd, line, limitor);
 		if (write(fd, line, ft_strlen(line)) == -1)
 			error_handler("Writing lines", NULL, 1);
@@ -81,6 +90,7 @@ int	heredoc(char *limit, t_px *px)
 	if (pid == 0)
 	{
 		close(pipe_fd[READ]);
+		dup2(px->fd_org_stdin, STDIN_FILENO);
 		write_line(limit, pipe_fd[WRITE], px);
 	}
 	else

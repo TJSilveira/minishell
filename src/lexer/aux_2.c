@@ -89,3 +89,17 @@ int	check_only_terminal(char *input)
 		return (1);
 	return (1);
 }
+
+void	lexer_struct_token_org_update(t_lexer *lexer)
+{
+	t_token	*curr;
+
+	curr = lexer->first_token;
+	while (curr)
+	{
+		if (ft_strchr(curr->data, '\"') != NULL
+			|| ft_strchr(curr->data, '\'') != NULL)
+			curr->type_org = CHAR_DQUOTE;
+		curr = curr->next;
+	}
+}

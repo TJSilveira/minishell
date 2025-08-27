@@ -28,6 +28,7 @@ int	lexer_function(char *input, t_lexer *lexer)
 		return (EXIT_FAILURE);
 	init_lexer_aux(input, &aux, lexer);
 	process_char(input, &aux, lexer);
+	lexer_struct_token_org_update(lexer);
 	clean_last_tokens(&aux, lexer);
 	token_expansion(&aux, lexer);
 	remove_empty_tokens(lexer);

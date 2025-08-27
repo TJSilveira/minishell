@@ -103,27 +103,27 @@ char	*read_buffer(int fd, char *buffer)
 	return (buffer);
 }
 
-char	*get_next_line(int fd)
+char	*get_next_line(int fd, int option)
 {
 	char		*line;
-	static char	*buffer;
+	static char	*buffer[FD_MAX];
 
-	if (fd == -1 && buffer)
+	if (option == TO_CLEAN && buffer[fd])
 	{
-		free(buffer);
+		free(buffer[fd]);
 		return (NULL);
 	}
 	else if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
-	if (!buffer)
-		buffer = ft_strdup("");
-	buffer = read_buffer(fd, buffer);
-	if (!buffer)
+	if (!buffer[fd])
+		buffer[fd] = ft_strdup("");
+	buffer[fd] = read_buffer(fd, buffer[fd]);
+	if (!buffer[fd])
 	{
-		free(buffer);
+		free(buffer[fd]);
 		return (NULL);
 	}
-	line = read_line(buffer);
-	buffer = new_line(buffer);
+	line = read_line(buffer[fd]);
+	buffer[fd] = new_line(buffer[fd]);
 	return (line);
 }

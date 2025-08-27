@@ -61,6 +61,7 @@ typedef struct s_px
 	int		num_commands;
 	int		fd_stdout;
 	int		fd_stdin;
+	int		fd_org_stdin;
 	t_ast	*root_tree;
 }	t_px;
 
@@ -91,7 +92,8 @@ enum e_token_type
 
 typedef struct s_token
 {
-	int				type; // substitute by an enum afterwards
+	int				type;
+	int				type_org;
 	char			*data;
 	struct s_token	*next;
 }	t_token;
@@ -172,6 +174,7 @@ void			insert_expansion(t_token *t, int sta, int len, char *mid_str);
 void			token_expansion_aux(t_token *token);
 void			token_expansion(t_token_aux *aux, t_lexer *lexer);
 int				lexer_function(char *input, t_lexer *lexer);
+void			lexer_struct_token_org_update(t_lexer *lexer);
 
 /* parser.c */
 void			ast_token_next(t_parser *par);

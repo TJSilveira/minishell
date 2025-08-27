@@ -29,6 +29,14 @@
 #  define BUFFER_SIZE 1024
 # endif
 
+# ifndef TO_USE
+#  define TO_USE 0
+# endif
+
+# ifndef TO_CLEAN
+#  define TO_CLEAN 1
+# endif
+
 typedef struct s_list
 {
 	void			*content;
@@ -93,7 +101,7 @@ void	ft_putstr_var_fd(char *s, int start, int end, int fd);
 void	ft_rmvchr(char *str, char *char_to_remove);
 
 /* Get Next line functions */
-char	*get_next_line(int fd);
+char	*get_next_line(int fd, int option);
 char	*new_line(char *buffer);
 char	*read_line(char *buffer);
 char	*read_buffer(int fd, char *buffer);

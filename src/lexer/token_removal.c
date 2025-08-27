@@ -38,24 +38,25 @@ void	remove_single_token(t_lexer *lexer, t_token *to_remove)
 
 void	remove_empty_tokens(t_lexer *lexer)
 {
-	t_token	*curr;
+	t_token	*c;
 	t_token	*prev;
 
-	curr = lexer->first_token;
+	c = lexer->first_token;
 	prev = NULL;
-	while (curr)
+	while (c)
 	{
-		if (curr->data[0] == 0)
+		if (c->data[0] == 0
+			&& !(c->type_org == CHAR_QUOTE || c->type_org == CHAR_DQUOTE))
 		{
-			remove_single_token(lexer, curr);
+			remove_single_token(lexer, c);
 			if (prev == NULL)
-				curr = lexer->first_token;
+				c = lexer->first_token;
 			else
-				curr = prev->next;
+				c = prev->next;
 			continue ;
 		}
-		prev = curr;
-		curr = curr->next;
+		prev = c;
+		c = c->next;
 	}
 }
 

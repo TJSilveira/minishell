@@ -35,4 +35,5 @@ void	initialize_px(t_px *px, t_ast *root_tree)
 	px->root_tree = root_tree;
 	px->fd_stdin = dup(STDIN_FILENO);
 	px->fd_stdout = dup(STDOUT_FILENO);
+	px->fd_org_stdin = dup(STDIN_FILENO);
 }

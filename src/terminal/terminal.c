@@ -74,7 +74,7 @@ void	terminal_input_option(void)
 	}
 	else
 	{
-		pl->line = get_next_line(STDIN_FILENO);
+		pl->line = get_next_line(STDIN_FILENO, TO_USE);
 		pl->input_type = NONINTERACTIVE_MODE;
 		if (pl->line == NULL)
 			exit_builtin(NULL);

@@ -33,6 +33,8 @@ void	free_px(t_px *px)
 			close(px->fd_stdin);
 		if (px->fd_stdout > 2)
 			close(px->fd_stdout);
+		if (px->fd_org_stdin > 2)
+			close(px->fd_org_stdin);
 		free(px);
 		px = NULL;
 	}
