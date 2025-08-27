@@ -19,13 +19,13 @@ void	redirections_files_setup(int fd, int type)
 	if (type == CHAR_INRED || type == CHAR_HEREDOC)
 	{
 		if (dup2(fd, STDIN_FILENO) == -1)
-			error_handler("Duplicating read-end pipe to STDIN", NULL, 1);
+			error_handler("Dupl read-end pipe to STDIN", NULL, 1, NULL);
 		close(fd);
 	}
 	else
 	{
 		if (dup2(fd, STDOUT_FILENO) == -1)
-			error_handler("Duplicating write-end pipe to STDOUT", NULL, 1);
+			error_handler("Dupl write-end pipe to STDOUT", NULL, 1, NULL);
 		close(fd);
 	}
 }

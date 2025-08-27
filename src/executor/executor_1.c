@@ -41,10 +41,20 @@ int	executor_aux(t_px *px, t_ast *root)
 
 void	restore_fd(t_px *px)
 {
-	dup2(px->fd_stdin, STDIN_FILENO);
-	dup2(px->fd_stdout, STDOUT_FILENO);
-	close(px->fd_stdin);
-	close(px->fd_stdout);
+	if (px->fd_stdin != -1)
+	{
+		dup2(px->fd_stdin, STDIN_FILENO);
+		if (px->fd_stdin > 2)
+			close(px->fd_stdin);
+		px->fd_stdin = -1;
+	}
+	if (px->fd_stdout != -1)
+	{
+		dup2(px->fd_stdout, STDOUT_FILENO);
+		if (px->fd_stdout > 2)
+			close(px->fd_stdout);
+		px->fd_stdout = -1;
+	}
 }
 
 int	executor_pipe_left(t_px *px, t_ast *root, int pipe_fd[2])
@@ -57,6 +67,8 @@ int	executor_pipe_left(t_px *px, t_ast *root, int pipe_fd[2])
 	exit_code = execute_subshell(px, root->left);
 	free_struct_to_free();
 	free_global_struct();
+	free_px_fds(px);
+	close(pipe_fd[WRITE]);
 	exit (exit_code);
 }
 
@@ -70,6 +82,8 @@ int	executor_pipe_right(t_px *px, t_ast *root, int pipe_fd[2])
 	exit_code = execute_subshell(px, root->right);
 	free_struct_to_free();
 	free_global_struct();
+	free_px_fds(px);
+	close(pipe_fd[READ]);
 	exit (exit_code);
 }
 

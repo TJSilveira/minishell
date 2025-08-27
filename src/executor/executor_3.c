@@ -25,7 +25,7 @@ void	exec_command_free_aux(char **paths, char **commands)
 	free(pl->prompt);
 }
 
-void	exec_command(t_ast *cmd_node)
+void	exec_command(t_ast *cmd_node, t_px *px)
 {
 	int		j;
 	char	**paths;
@@ -34,27 +34,27 @@ void	exec_command(t_ast *cmd_node)
 	char	*file_name;
 
 	commands = commands_extractor(cmd_node);
-	builtin_fun(cmd_node, commands, TO_EXIT);
+	builtin_fun(cmd_node, commands, TO_EXIT, px);
 	paths = path_extractor();
 	j = 0;
 	while (paths != NULL && paths[j])
 	{
 		final_path = ft_strjoin_3(paths[j], '/', commands[0]);
 		if (access(final_path, F_OK) == 0)
-			execve_checker(final_path, commands, paths);
+			execve_checker(final_path, commands, paths, px);
 		free (final_path);
 		j++;
 	}
 	if (ft_strchr(commands[0], '/') && access(commands[0], F_OK) == 0)
-		execve_checker(NULL, commands, paths);
+		execve_checker(NULL, commands, paths, px);
 	if (paths == NULL && access(commands[0], F_OK) == 0)
-		execve_checker(NULL, commands, paths);
+		execve_checker(NULL, commands, paths, px);
 	file_name = ft_strdup(cmd_node->data);
 	exec_command_free_aux(paths, commands);
-	error_handler(NULL, file_name, -1);
+	error_handler(NULL, file_name, -1, px);
 }
 
-void	execve_checker(char *f_p, char **comms, char **paths)
+void	execve_checker(char *f_p, char **comms, char **paths, t_px *px)
 {
 	t_global	*global;
 	char		*file;
@@ -66,14 +66,14 @@ void	execve_checker(char *f_p, char **comms, char **paths)
 		file = ft_strdup(comms[0]);
 		free_arrays(comms);
 		free_arrays(paths);
-		error_handler(NULL, file, -1);
+		error_handler(NULL, file, -1, px);
 	}
 	else if (f_p == NULL && execve(comms[0], comms, global->ev) == -1)
 	{
 		file = ft_strdup(comms[0]);
 		free_arrays(comms);
 		free_arrays(paths);
-		error_handler(NULL, file, -1);
+		error_handler(NULL, file, -1, px);
 	}
 }
 
@@ -89,14 +89,14 @@ int	executor_function(t_ast *root_tree)
 	{
 		exit_code = redirections_setup(px.root_tree, &px);
 		restore_fd(&px);
-		free_global_struct();
-		free_struct_to_free();
+		free_px_fds(&px);
 		return (exit_code);
 	}
 	else
 	{
 		exit_code = executor_aux(&px, px.root_tree);
 		free_struct_to_free();
+		free_px_fds(&px);
 		return (exit_code);
 	}
 }

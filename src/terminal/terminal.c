@@ -17,7 +17,7 @@ void	terminal(void)
 	t_prompt_line	*pl;
 
 	pl = to_prompt_line_struct();
-	pl->prompt = ft_strdup("\033[35m$minishell> \033[0m");
+	pl->prompt = ft_strdup("$minishell> ");
 	while (1)
 	{
 		parent_signals();
@@ -70,14 +70,14 @@ void	terminal_input_option(void)
 		pl->line = readline(pl->prompt);
 		pl->input_type = INTERACTIVE_MODE;
 		if (pl->line == NULL)
-			exit_builtin(NULL);
+			exit_builtin(NULL, NULL);
 	}
 	else
 	{
 		pl->line = get_next_line(STDIN_FILENO, TO_USE);
 		pl->input_type = NONINTERACTIVE_MODE;
 		if (pl->line == NULL)
-			exit_builtin(NULL);
+			exit_builtin(NULL, NULL);
 		if (pl->line[ft_strlen(pl->line) - 1] == '\n')
 			pl->line[ft_strlen(pl->line) - 1] = 0;
 	}

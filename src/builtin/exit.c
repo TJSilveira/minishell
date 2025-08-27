@@ -39,21 +39,22 @@ int	ft_a_to_exitcode(const char *nptr, int *total)
 	return (EXIT_SUCCESS);
 }
 
-void	exit_free_aux(int exit_code)
+int	exit_free_aux(int exit_code, t_px *px)
 {
 	free_global_struct();
 	free_struct_to_free();
+	free_px_fds(px);
 	exit(exit_code);
 }
 
-void	exit_builtin_aux(t_ast *node, int *exit_code)
+void	exit_builtin_aux(t_ast *node, int *exit_code, t_px *px)
 {
 	if (ft_a_to_exitcode(node->data, exit_code))
 	{
 		ft_putstr_fd("minishell: exit: ", STDERR_FILENO);
 		ft_putstr_fd(node->data, STDERR_FILENO);
 		ft_putstr_fd(": numeric argument required\n", STDERR_FILENO);
-		exit_free_aux(2);
+		exit_free_aux(2, px);
 	}
 }
 
@@ -78,17 +79,20 @@ int	exit_arg_count(t_ast *node, int *exit_code)
 	return (count);
 }
 
-int	exit_builtin(t_ast *node)
+int	exit_builtin(t_ast *node, t_px *px)
 {
 	t_prompt_line	*pl;
-	int				exit_code;
+	t_global		*global;
 
 	pl = to_prompt_line_struct();
-	exit_code = 0;
-	if (exit_arg_count(node, &exit_code) > 1)
+	global = global_struct();
+	if (exit_arg_count(node, &global->exit_code) > 1)
 		return (EXIT_FAILURE);
 	if (node == NULL && pl->input_type == NONINTERACTIVE_MODE)
+	{
+		free_px_fds(px);
 		exit(EXIT_SUCCESS);
+	}
 	if (pl->input_type == INTERACTIVE_MODE)
 	{
 		free(pl->prompt);
@@ -96,10 +100,8 @@ int	exit_builtin(t_ast *node)
 		ft_putstr_fd("exit\n", STDOUT_FILENO);
 	}
 	if (node == NULL)
-		exit_free_aux(EXIT_SUCCESS);
-	exit_code = 0;
-	exit_builtin_aux(node, &exit_code);
-	free_global_struct();
-	free_struct_to_free();
-	exit(exit_code);
+		exit_free_aux(global->exit_code, px);
+	global->exit_code = 0;
+	exit_builtin_aux(node, &global->exit_code, px);
+	return (exit_free_aux(global->exit_code, px));
 }

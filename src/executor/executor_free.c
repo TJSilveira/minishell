@@ -25,17 +25,25 @@ void	free_arrays(char **arrays)
 	free(arrays);
 }
 
-void	free_px(t_px *px)
+void	free_px_fds(t_px *px)
 {
 	if (px)
 	{
 		if (px->fd_stdin > 2)
+		{
 			close(px->fd_stdin);
+			px->fd_stdin = -1;
+		}
 		if (px->fd_stdout > 2)
+		{
 			close(px->fd_stdout);
+			px->fd_stdout = -1;
+		}
 		if (px->fd_org_stdin > 2)
+		{
 			close(px->fd_org_stdin);
-		free(px);
+			px->fd_org_stdin = -1;
+		}
 		px = NULL;
 	}
 }

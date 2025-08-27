@@ -12,13 +12,13 @@
 
 #include "../../includes/minishell.h"
 
-int	builtin_fun(t_ast *node, char **comms, int to_exit)
+int	builtin_fun(t_ast *node, char **comms, int to_exit, t_px *px)
 {
 	int				exit_code;
 	t_prompt_line	*pl;
 
 	pl = to_prompt_line_struct();
-	exit_code = builtin_execution(node);
+	exit_code = builtin_execution(node, px);
 	if (exit_code == NO_BUILTIN)
 		return (0);
 	else if (to_exit == TO_EXIT)
@@ -48,7 +48,7 @@ int	is_builtin(t_ast *n)
 		return (0);
 }
 
-int	builtin_execution(t_ast *n)
+int	builtin_execution(t_ast *n, t_px *px)
 {
 	if (ft_strncmp("echo", n->data, 4) == 0 && ft_strlen(n->data) == 4)
 		return (echo_builtin(n->left));
@@ -63,7 +63,7 @@ int	builtin_execution(t_ast *n)
 	else if (ft_strncmp("env", n->data, 3) == 0 && ft_strlen(n->data) == 3)
 		return (env_builtin(n->left));
 	else if (ft_strncmp("exit", n->data, 4) == 0 && ft_strlen(n->data) == 4)
-		return (exit_builtin(n->left));
+		return (exit_builtin(n->left, px));
 	else
 		return (NO_BUILTIN);
 }

@@ -221,7 +221,7 @@ void			update_shlvl(void);
 
 /* executor.c */
 int				open_fd(char *path, int option, t_px *px);
-void			write_line_break(int fd, char *line, char *limitor);
+void			write_line_break(int fd, char *line, char *limitor, t_px *px);
 int				write_line(char *limit, int fd, t_px *px);
 int				heredoc(char *limiter, t_px *px);
 void			redirections_files_setup(int fd, int type);
@@ -233,15 +233,15 @@ int				executor(t_px *px, t_ast *cmd_node);
 int				executor_pipe(t_px *px, t_ast *root);
 int				execute_subshell(t_px *px, t_ast *root);
 void			restore_fd(t_px *px);
-void			exec_command(t_ast *cmd_node);
+void			exec_command(t_ast *cmd_node, t_px *px);
 char			**commands_extractor(t_ast *cmd_node);
 char			**path_extractor(void);
 void			free_arrays(char **arrays);
-void			free_px(t_px *px);
+void			free_px_fds(t_px *px);
 char			*ft_strjoin_3(const char *s1, char connector, const char *s2);
-void			execve_checker(char *f_p, char **comms, char **paths);
+void			execve_checker(char *f_p, char **comms, char **paths, t_px *px);
 int				executor_function(t_ast *root_tree);
-void			error_handler(char *msg, char *f_name, int err_code);
+void			error_handler(char *msg, char *f_name, int err_code, t_px *px);
 void			malloc_error_handler(void *ptr, int error_code);
 void			free_struct_to_free(void);
 int				executor_builtin_func(t_px *px);
@@ -259,12 +259,12 @@ int				count_paren(t_lexer *lexer);
 
 /* builtin.c */
 int				pwd_builtin(void);
-int				builtin_execution(t_ast *node);
-int				builtin_fun(t_ast *node, char **comms, int to_exit);
+int				builtin_execution(t_ast *node, t_px *px);
+int				builtin_fun(t_ast *node, char **comms, int to_exit, t_px *px);
 int				is_builtin(t_ast *n);
 int				echo_builtin(t_ast *node);
 int				cd_builtin(t_ast *node);
-int				exit_builtin(t_ast *node);
+int				exit_builtin(t_ast *node, t_px *px);
 int				export_builtin(t_ast *node);
 void			print_export_builtin_aux(char **env_array);
 void			qs_swap_str(char **arr_a, char **arr_b);
