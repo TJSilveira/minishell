@@ -32,6 +32,7 @@ void	init_ev(char *envp[])
 	while (envp[++count])
 		global->ev[count] = ft_strdup(envp[count]);
 	global->ev[count] = NULL;
+	update_shlvl();
 }
 
 void	init_global_struct(char *envp[])

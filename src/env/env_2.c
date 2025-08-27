@@ -69,3 +69,19 @@ char	*find_ev(char *to_expand)
 	}
 	return (ft_strdup(""));
 }
+
+void	update_shlvl(void)
+{
+	char	*temp;
+	char	*final_str;
+	int		lvl;
+
+	temp = find_ev("SHLVL");
+	lvl = ft_atoi(temp);
+	lvl++;
+	free(temp);
+	temp = ft_itoa(lvl);
+	final_str = ft_strjoin("=", temp);
+	free(temp);
+	update_env("SHLVL", final_str, final_str);
+}
