@@ -154,6 +154,8 @@ typedef struct s_expansion
 	int		len_final;
 }	t_expansion;
 
+void safe_print(const char *msg);
+
 /* lexer.c */
 int				check_matching_quotes(char *input);
 t_token			*get_last_token(t_lexer *lexer);

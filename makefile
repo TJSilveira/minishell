@@ -56,4 +56,7 @@ test: re
 
 rebonus: fclean bonus
 
+valgrind:
+	@valgrind --leak-check=full --track-fds=yes --suppressions=readline.supp -s --show-leak-kinds=all --track-origins=yes ./minishell
+
 .PHONY: all clean fclean re

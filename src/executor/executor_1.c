@@ -21,7 +21,12 @@ int	executor_aux(t_px *px, t_ast *root)
 	if (is_default_token(root->type))
 		return (executor(px, root));
 	else if (root->type == CHAR_PIPE)
+	{
+		// safe_print("This is the current node: '");
+		// safe_print(root->data);
+		// safe_print("'\n");
 		return (executor_pipe(px, root));
+	}
 	else if (root->type == CHAR_AND)
 	{
 		exit_code = executor_aux(px, root->left);
@@ -62,8 +67,19 @@ int	executor_pipe_left(t_px *px, t_ast *root, int pipe_fd[2])
 	int	exit_code;
 
 	child_signals();
+	// safe_print("This is the current node: '");
+	// safe_print(root->left->left->data);
+	// safe_print("; px->fd_org_stdin: ");
+	// safe_print(ft_itoa(px->fd_org_stdin));
+	// safe_print("; px->fd_stdin: ");
+	// safe_print(ft_itoa(px->fd_stdin));
+	// safe_print("; px->fd_stdout: ");
+	// safe_print(ft_itoa(px->fd_stdout));
+	// safe_print("'\n");
 	dup2(pipe_fd[WRITE], STDOUT_FILENO);
 	close(pipe_fd[READ]);
+	close(pipe_fd[WRITE]);
+
 	exit_code = execute_subshell(px, root->left);
 	free_struct_to_free();
 	free_global_struct();
@@ -77,7 +93,18 @@ int	executor_pipe_right(t_px *px, t_ast *root, int pipe_fd[2])
 	int	exit_code;
 
 	child_signals();
+	// usleep(50000);
+	// safe_print("This is the current node: '");
+	// safe_print(root->right->left->data);
+	// safe_print("; px->fd_org_stdin: ");
+	// safe_print(ft_itoa(px->fd_org_stdin));
+	// safe_print("; px->fd_stdin: ");
+	// safe_print(ft_itoa(px->fd_stdin));
+	// safe_print("; px->fd_stdout: ");
+	// safe_print(ft_itoa(px->fd_stdout));
+	// safe_print("'\n");
 	dup2(pipe_fd[READ], STDIN_FILENO);
+	close(pipe_fd[READ]);
 	close(pipe_fd[WRITE]);
 	exit_code = execute_subshell(px, root->right);
 	free_struct_to_free();

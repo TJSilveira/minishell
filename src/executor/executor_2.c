@@ -28,7 +28,6 @@ int	executor_pipe(t_px *px, t_ast *root)
 	pids[1] = fork();
 	if (pids[1] == 0)
 		executor_pipe_right(px, root, pipe_fd);
-	restore_fd(px);
 	return (executor_pipe_return(pipe_fd, pids, &status));
 }
 
@@ -43,6 +42,8 @@ int	execute_subshell(t_px *px, t_ast *root)
 	px_subshell.root_tree = root;
 	px_subshell.fd_stdin = px->fd_stdin;
 	px_subshell.fd_stdout = px->fd_stdout;
+	if (px->fd_org_stdin > 0)
+		px_subshell.fd_org_stdin = px->fd_org_stdin;
 	exit_code = executor_aux(&px_subshell, root);
 	free(pl->prompt);
 	return (exit_code);
