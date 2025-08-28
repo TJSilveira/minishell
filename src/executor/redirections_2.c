@@ -92,14 +92,17 @@ int	heredoc(char *limit, t_px *px)
 		error_handler("Fork creation", NULL, 1, px);
 	if (pid == 0)
 	{
+		heredoc_signals();
 		close(pipe_fd[READ]);
 		dup2(px->fd_org_stdin, STDIN_FILENO);
 		write_line(limit, pipe_fd[WRITE], px);
 	}
 	else
 	{
+		ignore_signals();
 		close(pipe_fd[WRITE]);
 		waitpid(pid, NULL, 0);
+		parent_signals();
 		return (pipe_fd[READ]);
 	}
 	return (-1);

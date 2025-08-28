@@ -295,5 +295,6 @@ void			parent_signals(void);
 void			child_signals(void);
 void			ignore_signals(void);
 void			print_child_signals(int status);
+void			heredoc_signals(void);
 
 #endif
