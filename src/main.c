@@ -25,15 +25,3 @@ int	main(int argc, char *argv[], char *envp[])
 	terminal();
 	return (0);
 }
-
-void safe_print(const char *msg)
-{
-    int tty_fd = open("/dev/tty", O_WRONLY);
-    if (tty_fd != -1) {
-        write(tty_fd, msg, strlen(msg));
-        close(tty_fd);
-    } else {
-        // fallback if no tty
-        write(STDERR_FILENO, msg, strlen(msg));
-    }
-}

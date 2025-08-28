@@ -35,6 +35,8 @@
 # define TO_EXIT 1
 # define INTERACTIVE_MODE 0
 # define NONINTERACTIVE_MODE 1
+# define IN_PIPE 1
+# define NO_PIPE 0
 
 typedef struct s_ast
 {
@@ -154,8 +156,6 @@ typedef struct s_expansion
 	int		len_final;
 }	t_expansion;
 
-void safe_print(const char *msg);
-
 /* lexer.c */
 int				check_matching_quotes(char *input);
 t_token			*get_last_token(t_lexer *lexer);
@@ -230,8 +230,8 @@ void			redirections_files_setup(int fd, int type);
 int				redirections_setup(t_ast *root, t_px *px);
 int				count_number_commands(t_ast *root_tree);
 void			initialize_px(t_px *px, t_ast *root_tree);
-int				executor_aux(t_px *px, t_ast *root);
-int				executor(t_px *px, t_ast *cmd_node);
+int				executor_aux(t_px *px, t_ast *root, int pipe_op);
+int				executor(t_px *px, t_ast *cmd_node, int pipe_op);
 int				executor_pipe(t_px *px, t_ast *root);
 int				execute_subshell(t_px *px, t_ast *root);
 void			restore_fd(t_px *px);
@@ -246,10 +246,13 @@ int				executor_function(t_ast *root_tree);
 void			error_handler(char *msg, char *f_name, int err_code, t_px *px);
 void			malloc_error_handler(void *ptr, int error_code);
 void			free_struct_to_free(void);
-int				executor_builtin_func(t_px *px);
+int				executor_builtin_func_normal(t_px *px);
 int				executor_pipe_left(t_px *px, t_ast *root, int pipe_fd[2]);
 int				executor_pipe_right(t_px *px, t_ast *root, int pipe_fd[2]);
 int				executor_pipe_return(int pipe_fd[2], int pids[2], int *status);
+int				executor_builtin_func_pipe(t_px *px);
+void			exec_command_free_aux(char **paths, char **commands);
+void			error_handler_no_command(t_px *px);
 
 /* terminal.c */
 void			terminal(void);

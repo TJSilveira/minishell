@@ -94,7 +94,7 @@ int	executor_function(t_ast *root_tree)
 	}
 	else
 	{
-		exit_code = executor_aux(&px, px.root_tree);
+		exit_code = executor_aux(&px, px.root_tree, NO_PIPE);
 		free_struct_to_free();
 		free_px_fds(&px);
 		return (exit_code);

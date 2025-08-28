@@ -44,7 +44,7 @@ int	execute_subshell(t_px *px, t_ast *root)
 	px_subshell.fd_stdout = px->fd_stdout;
 	if (px->fd_org_stdin > 0)
 		px_subshell.fd_org_stdin = px->fd_org_stdin;
-	exit_code = executor_aux(&px_subshell, root);
+	exit_code = executor_aux(&px_subshell, root, IN_PIPE);
 	free(pl->prompt);
 	return (exit_code);
 }
@@ -66,13 +66,13 @@ int	executor_return(int *status, int pid)
 	return (EXIT_FAILURE);
 }
 
-int	executor(t_px *px, t_ast *cmd_node)
+int	executor(t_px *px, t_ast *cmd_node, int pipe_op)
 {
 	int	status;
 	int	pid;
 
-	if (is_builtin(px->root_tree))
-		return (executor_builtin_func(px));
+	if (pipe_op == NO_PIPE && is_builtin(px->root_tree))
+		return (executor_builtin_func_normal(px));
 	pid = fork();
 	status = 0;
 	if (pid == -1)
@@ -80,30 +80,15 @@ int	executor(t_px *px, t_ast *cmd_node)
 	if (pid == 0)
 	{
 		child_signals();
+		if (pipe_op == IN_PIPE && is_builtin(px->root_tree))
+			return (executor_builtin_func_pipe(px));
 		status = redirections_setup(cmd_node, px);
 		if (status == EXIT_FAILURE)
 			exit (EXIT_FAILURE);
 		if (cmd_node->data == NULL || cmd_node->data[0] == 0)
-			error_handler("No command ''", NULL, 1, px);
+			error_handler_no_command(px);
 		if (is_default_token(cmd_node->type))
 			exec_command(cmd_node, px);
 	}
 	return (executor_return(&status, pid));
-}
-
-/* Executes a subtree that is only composed out of a builtin function. */
-int	executor_builtin_func(t_px *px)
-{
-	int	exit_code;
-
-	exit_code = redirections_setup(px->root_tree, px);
-	if (exit_code == EXIT_SUCCESS)
-		exit_code = builtin_fun(px->root_tree, NULL, TO_RETURN, px);
-	dup2(px->fd_stdin, STDIN_FILENO);
-	dup2(px->fd_stdout, STDOUT_FILENO);
-	if (px->fd_stdin > 2)
-		close(px->fd_stdin);
-	if (px->fd_stdout > 2)
-		close(px->fd_stdout);
-	return (exit_code);
 }

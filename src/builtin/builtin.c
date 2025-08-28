@@ -28,6 +28,7 @@ int	builtin_fun(t_ast *node, char **comms, int to_exit, t_px *px)
 		free_global_struct();
 		rl_clear_history();
 		free(pl->prompt);
+		free_px_fds(px);
 		exit(exit_code);
 	}
 	else
