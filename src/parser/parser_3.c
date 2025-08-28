@@ -38,6 +38,7 @@ int	par_tree_agg(t_parser *par, t_bp *bp, t_ast **l_n, t_ast **r_n)
 	{
 		ft_putstr_fd("Error: Binary operator missing right operand\n",
 			STDERR_FILENO);
+		free_ast(*l_n);
 		return (EXIT_FAILURE);
 	}
 	*r_n = parser_function(par, bp->r);
