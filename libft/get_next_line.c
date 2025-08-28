@@ -89,8 +89,14 @@ int	read_buffer_loop(int fd, char **buffer, char **str)
 
 char	*read_buffer(int fd, char *buffer)
 {
-	char	*str;
+	static char	*str;
 
+	if (fd == -1)
+	{
+		free(str);
+		str = NULL;
+		return (NULL);
+	}
 	str = malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!str)
 	{
@@ -108,11 +114,9 @@ char	*get_next_line(int fd, int option)
 	char		*line;
 	static char	*buffer[FD_MAX];
 
-	if (option == TO_CLEAN && buffer[fd])
-	{
-		free(buffer[fd]);
+	printf ("inside gnl\n");
+	if (get_next_line_clean(fd, option, buffer))
 		return (NULL);
-	}
 	else if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	if (!buffer[fd])

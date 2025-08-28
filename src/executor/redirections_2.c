@@ -30,7 +30,7 @@ int	open_fd(char *path, int option, t_px *px)
 	return (fd);
 }
 
-void	write_line_break(int fd, char *line, char *limitor, t_px *px)
+void	write_line_break(char *line, char *limitor, t_px *px)
 {
 	size_t			size;
 	t_prompt_line	*pl;
@@ -39,11 +39,10 @@ void	write_line_break(int fd, char *line, char *limitor, t_px *px)
 		return ;
 	pl = to_prompt_line_struct();
 	size = ft_strlen(limitor);
-	if (size == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0)
+	if (size + 1 == ft_strlen(line) && ft_strncmp(limitor, line, size) == 0
+		&& (int)(ft_strchr(line, '\n') - line) == (int)(size))
 	{
 		free(line);
-		free(limitor);
-		close(fd);
 		get_next_line(0, TO_CLEAN);
 		free_global_struct();
 		free_struct_to_free();
@@ -53,31 +52,37 @@ void	write_line_break(int fd, char *line, char *limitor, t_px *px)
 	}
 }
 
-int	write_line(char *limit, int fd, t_px *px)
+int	write_line(char *limit, t_px *px)
 {
 	char			*line;
-	char			*limitor;
 
-	limitor = ft_strjoin(limit, "\n");
 	while (1)
 	{
 		write(px->fd_stdout, "> ", 2);
 		line = get_next_line(0, TO_USE);
 		if (line == NULL)
 		{
-			free(limitor);
-			close(fd);
 			get_next_line(0, TO_CLEAN);
 			free_px_fds(px);
 			exit(EXIT_SUCCESS);
 		}
-		write_line_break(fd, line, limitor, px);
-		if (write(fd, line, ft_strlen(line)) == -1)
+		write_line_break(line, limit, px);
+		if (write(STDOUT_FILENO, line, ft_strlen(line)) == -1)
 			error_handler("Writing lines", NULL, 1, px);
 		free(line);
 	}
 	free_px_fds(px);
 	exit(EXIT_FAILURE);
+}
+
+void	heredoc_child(char *limit, t_px *px, int pipe_fd[2])
+{
+	heredoc_signals();
+	close(pipe_fd[READ]);
+	dup2(px->fd_org_stdin, STDIN_FILENO);
+	dup2(pipe_fd[WRITE], STDOUT_FILENO);
+	close(pipe_fd[WRITE]);
+	write_line(limit, px);
 }
 
 int	heredoc(char *limit, t_px *px)
@@ -91,12 +96,7 @@ int	heredoc(char *limit, t_px *px)
 	if (pid == -1)
 		error_handler("Fork creation", NULL, 1, px);
 	if (pid == 0)
-	{
-		heredoc_signals();
-		close(pipe_fd[READ]);
-		dup2(px->fd_org_stdin, STDIN_FILENO);
-		write_line(limit, pipe_fd[WRITE], px);
-	}
+		heredoc_child(limit, px, pipe_fd);
 	else
 	{
 		ignore_signals();

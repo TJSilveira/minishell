@@ -37,3 +37,16 @@ void	initialize_px(t_px *px, t_ast *root_tree)
 	px->fd_stdout = dup(STDOUT_FILENO);
 	px->fd_org_stdin = dup(STDIN_FILENO);
 }
+
+t_px	*px_struct_fun(int option, t_px *px)
+{
+	static t_px	*px_addr;
+
+	if (option == WRITE)
+	{
+		px_addr = px;
+		return (px_addr);
+	}
+	else
+		return (px_addr);
+}

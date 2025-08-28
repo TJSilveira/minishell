@@ -105,5 +105,6 @@ char	*get_next_line(int fd, int option);
 char	*new_line(char *buffer);
 char	*read_line(char *buffer);
 char	*read_buffer(int fd, char *buffer);
+int		get_next_line_clean(int fd, int option, char **buffer);
 
 #endif

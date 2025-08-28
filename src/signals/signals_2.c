@@ -15,13 +15,17 @@
 void	sigint_handler_heredoc(int signal)
 {
 	t_global	*global;
+	t_px		*px;
 
-	global = global_struct();
 	(void)signal;
-	write(1, "\n", 1);
+	px = px_struct_fun(READ, NULL);
+	get_next_line(-1, TO_CLEAN);
+	global = global_struct();
+	write(px->fd_stdout, "\n", 1);
 	rl_on_new_line();
 	rl_replace_line("", 0);
 	exec_command_free_aux(NULL, NULL);
+	free_px_fds(px);
 	exit (130);
 }
 

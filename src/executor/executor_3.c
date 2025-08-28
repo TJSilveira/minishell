@@ -85,6 +85,7 @@ int	executor_function(t_ast *root_tree)
 	if (root_tree == NULL)
 		return (EXIT_FAILURE);
 	initialize_px(&px, root_tree);
+	px_struct_fun(WRITE, &px);
 	if (px.num_commands == 0)
 	{
 		exit_code = redirections_setup(px.root_tree, &px);

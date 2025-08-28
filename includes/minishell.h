@@ -223,8 +223,8 @@ void			update_shlvl(void);
 
 /* executor.c */
 int				open_fd(char *path, int option, t_px *px);
-void			write_line_break(int fd, char *line, char *limitor, t_px *px);
-int				write_line(char *limit, int fd, t_px *px);
+void			write_line_break(char *line, char *limitor, t_px *px);
+int				write_line(char *limit, t_px *px);
 int				heredoc(char *limiter, t_px *px);
 void			redirections_files_setup(int fd, int type);
 int				redirections_setup(t_ast *root, t_px *px);
@@ -253,6 +253,7 @@ int				executor_pipe_return(int pipe_fd[2], int pids[2], int *status);
 int				executor_builtin_func_pipe(t_px *px);
 void			exec_command_free_aux(char **paths, char **commands);
 void			error_handler_no_command(t_px *px);
+t_px			*px_struct_fun(int option, t_px *px);
 
 /* terminal.c */
 void			terminal(void);

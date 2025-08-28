@@ -43,6 +43,7 @@ SRC_FILES = ft_strjoin.c \
 		ft_calloc.c \
 		ft_striteri.c \
 		get_next_line.c \
+		get_next_line_aux.c \
 		ft_rmvchr.c
 
 SRC_BONUS_FILES = ft_lstnew_bonus.c \
