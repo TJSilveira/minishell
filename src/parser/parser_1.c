@@ -21,6 +21,7 @@ int	ast_operator_check(t_ast *root_node)
 			STDERR_FILENO);
 		ft_putstr_fd(root_node->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
+		free_ast(root_node);
 		return (EXIT_FAILURE);
 	}
 	if (is_operator_token(root_node->type))

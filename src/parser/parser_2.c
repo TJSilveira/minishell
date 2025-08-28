@@ -63,6 +63,7 @@ int	parse_simple_command_paren_check(t_parser *par, t_command	*c)
 	{
 		ft_putstr_fd("syntax error near unexpected token `('\n",
 			STDERR_FILENO);
+		free_ast(c->cmd);
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);

@@ -40,6 +40,11 @@ int	par_tree_agg(t_parser *par, t_bp *bp, t_ast **l_n, t_ast **r_n)
 		return (EXIT_FAILURE);
 	}
 	*r_n = parser_function(par, bp->r);
+	if (*r_n == NULL)
+	{
+		free_ast(*l_n);
+		return (EXIT_FAILURE);
+	}
 	*l_n = create_ast_structure(op, *l_n, *r_n);
 	return (EXIT_SUCCESS);
 }
