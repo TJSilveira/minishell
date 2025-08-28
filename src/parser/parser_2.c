@@ -28,6 +28,7 @@ int	parse_simple_command_red_token(t_parser *par, t_command *c)
 			STDERR_FILENO);
 		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
+		free_ast(c->cmd);
 		return (EXIT_FAILURE);
 	}
 	c->file = create_ast_node(CHAR_DEF, par->curr_token->data);

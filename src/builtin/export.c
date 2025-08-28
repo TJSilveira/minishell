@@ -54,6 +54,8 @@ int	check_valid_export_aux(char *str)
 {
 	int	i;
 
+	if (str[0] == 0)
+		return (EXIT_FAILURE);
 	if (ft_isdigit(str[0]))
 		return (EXIT_FAILURE);
 	i = -1;

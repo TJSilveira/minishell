@@ -22,6 +22,7 @@ int	parser_function_loop_inval_token(t_parser *par, t_ast **l_node)
 			STDERR_FILENO);
 		ft_putstr_fd(par->curr_token->data, STDERR_FILENO);
 		ft_putstr_fd("'\n", STDERR_FILENO);
+		free_ast(*l_node);
 		return (EXIT_FAILURE);
 	}
 	return (EXIT_SUCCESS);
