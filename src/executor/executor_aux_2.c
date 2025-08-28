@@ -89,5 +89,5 @@ char	*ft_strjoin_3(const char *s1, char connector, const char *s2)
 void	error_handler_no_command(t_px *px)
 {
 	exec_command_free_aux(NULL, NULL);
-	error_handler("No command ''", NULL, 1, px);
+	error_handler("No command ''", NULL, 127, px);
 }
